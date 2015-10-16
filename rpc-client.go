@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/gorilla/rpc/v2/json"
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // rpcOperation RPC operation

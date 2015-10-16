@@ -23,9 +23,9 @@ RUN curl -O -s https://storage.googleapis.com/golang/${GOLANG_TARBALL} && \
 		tar -xzf ${GOLANG_TARBALL} -C ${GOROOT%*go*} && \
 		rm ${GOLANG_TARBALL}
 
-ADD . ${GOPATH}/src/github.com/minio/minio
+ADD . ${GOPATH}/src/github.com/minio/minio-xl
 
-RUN cd ${GOPATH}/src/github.com/minio/minio && \
+RUN cd ${GOPATH}/src/github.com/minio/minio-xl && \
 		make
 
 RUN apt-get remove -y build-essential curl git && \
@@ -36,4 +36,4 @@ USER minio
 
 EXPOSE 9000 9001
 
-CMD ["sh", "-c", "${GOPATH}/bin/minio server"]
+CMD ["sh", "-c", "${GOPATH}/bin/minio-xl server"]

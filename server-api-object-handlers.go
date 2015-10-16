@@ -21,9 +21,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/minio/minio/pkg/donut"
-	"github.com/minio/minio/pkg/probe"
-	signv4 "github.com/minio/minio/pkg/signature"
+	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/probe"
+	signv4 "github.com/minio/minio-xl/pkg/signature"
 )
 
 const (

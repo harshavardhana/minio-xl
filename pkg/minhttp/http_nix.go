@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"github.com/facebookgo/httpdown"
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // An app contains one or more servers and their associated configuration.

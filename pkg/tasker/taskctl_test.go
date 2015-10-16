@@ -20,7 +20,7 @@ package tasker_test
 import (
 	"testing"
 
-	"github.com/minio/minio/pkg/tasker"
+	"github.com/minio/minio-xl/pkg/tasker"
 
 	. "gopkg.in/check.v1"
 )

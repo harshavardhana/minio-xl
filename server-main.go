@@ -24,8 +24,8 @@ import (
 	"strings"
 
 	"github.com/minio/cli"
-	"github.com/minio/minio/pkg/minhttp"
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/minhttp"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 var serverCmd = cli.Command{

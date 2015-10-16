@@ -32,7 +32,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/minio/minio/pkg/donut"
+	"github.com/minio/minio-xl/pkg/donut"
 	. "gopkg.in/check.v1"
 )
 

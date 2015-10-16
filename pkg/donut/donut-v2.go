@@ -31,12 +31,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/minio/minio/pkg/crypto/sha256"
-	"github.com/minio/minio/pkg/donut/cache/data"
-	"github.com/minio/minio/pkg/donut/cache/metadata"
-	"github.com/minio/minio/pkg/probe"
-	"github.com/minio/minio/pkg/quick"
-	signv4 "github.com/minio/minio/pkg/signature"
+	"github.com/minio/minio-xl/pkg/crypto/sha256"
+	"github.com/minio/minio-xl/pkg/donut/cache/data"
+	"github.com/minio/minio-xl/pkg/donut/cache/metadata"
+	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/quick"
+	signv4 "github.com/minio/minio-xl/pkg/signature"
 )
 
 // total Number of buckets allowed

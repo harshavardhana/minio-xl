@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/minio/minio/pkg/crypto/md5"
+	"github.com/minio/minio-xl/pkg/crypto/md5"
 	. "gopkg.in/check.v1"
 )
 

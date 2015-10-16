@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // This package is a fork https://github.com/facebookgo/grace

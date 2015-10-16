@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // isUsable provides a comprehensive way of knowing if the provided mountPath is mounted and writable

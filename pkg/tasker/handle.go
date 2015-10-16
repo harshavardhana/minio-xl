@@ -16,7 +16,7 @@
 
 package tasker
 
-import "github.com/minio/minio/pkg/probe"
+import "github.com/minio/minio-xl/pkg/probe"
 
 // Handle as the name suggests is a handle (self reference) to its
 // own task structure. Task has limited privileges over itself. Only the

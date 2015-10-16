@@ -6,7 +6,7 @@ checkdeps:
 
 checkgopath:
 	@echo "Checking if project is at ${GOPATH}"
-	@for mcpath in $(echo ${GOPATH} | sed 's/:/\n/g'); do if [ ! -d ${mcpath}/src/github.com/minio/minio ]; then echo "Project not found in ${mcpath}, please follow instructions provided at https://github.com/minio/minio/blob/master/CONTRIBUTING.md#setup-your-minio-github-repository" && exit 1; fi done
+	@for mcpath in $(echo ${GOPATH} | sed 's/:/\n/g'); do if [ ! -d ${mcpath}/src/github.com/minio/minio ]; then echo "Project not found in ${mcpath}, please follow instructions provided at https://github.com/minio/minio-xl/blob/master/CONTRIBUTING.md#setup-your-minio-github-repository" && exit 1; fi done
 
 getdeps: checkdeps checkgopath
 	@go get github.com/golang/lint/golint && echo "Installed golint:"
@@ -30,7 +30,7 @@ fmt:
 lint:
 	@echo "Running $@:"
 	@GO15VENDOREXPERIMENT=1 golint *.go
-	@GO15VENDOREXPERIMENT=1 golint github.com/minio/minio/pkg...
+	@GO15VENDOREXPERIMENT=1 golint github.com/minio/minio-xl/pkg...
 
 cyclo:
 	@echo "Running $@:"
@@ -44,14 +44,14 @@ build: getdeps verifiers
 test: build
 	@echo "Running all testing:"
 	@GO15VENDOREXPERIMENT=1 go test $(GOFLAGS) .
-	@GO15VENDOREXPERIMENT=1 go test $(GOFLAGS) github.com/minio/minio/pkg...
+	@GO15VENDOREXPERIMENT=1 go test $(GOFLAGS) github.com/minio/minio-xl/pkg...
 
 gomake-all: build
-	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio
+	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio-xl
 
 release: version
 	@echo "Installing minio (new version):"
-	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio
+	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio-xl
 
 version:
 	@echo "Generating new version.go"

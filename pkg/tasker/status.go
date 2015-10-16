@@ -16,7 +16,7 @@
 
 package tasker
 
-import "github.com/minio/minio/pkg/probe"
+import "github.com/minio/minio-xl/pkg/probe"
 
 // StatusCode denotes the completion status of a command.
 type statusCode int8

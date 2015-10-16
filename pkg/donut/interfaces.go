@@ -19,8 +19,8 @@ package donut
 import (
 	"io"
 
-	"github.com/minio/minio/pkg/probe"
-	signv4 "github.com/minio/minio/pkg/signature"
+	"github.com/minio/minio-xl/pkg/probe"
+	signv4 "github.com/minio/minio-xl/pkg/signature"
 )
 
 // Collection of Donut specification interfaces

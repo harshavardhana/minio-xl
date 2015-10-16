@@ -20,8 +20,8 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/minio/minio/pkg/probe"
-	"github.com/minio/minio/pkg/quick"
+	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/quick"
 )
 
 // getDonutConfigPath get donut config file path

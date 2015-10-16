@@ -8,9 +8,19 @@
 			"revisionTime": "2015-09-08T20:46:18Z"
 		},
 		{
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "2df174808ee097f90d259e432cc04442cf60be21",
+			"revisionTime": "2015-06-17T22:34:22-05:00"
+		},
+		{
+			"path": "github.com/davecgh/go-spew/spew/testdata",
+			"revision": "2df174808ee097f90d259e432cc04442cf60be21",
+			"revisionTime": "2015-06-17T22:34:22-05:00"
+		},
+		{
 			"path": "github.com/dustin/go-humanize",
-			"revision": "1c212aae1d02984808182b98b0da7a3e07e4c770",
-			"revisionTime": "2015-08-09T13:14:05-07:00"
+			"revision": "c20a8bde38c8f5ba06f6600edf473705c96829d1",
+			"revisionTime": "2015-08-24T01:38:10-07:00"
 		},
 		{
 			"path": "github.com/elazarl/go-bindata-assetfs",
@@ -23,14 +33,34 @@
 			"revisionTime": "2015-04-09T18:09:13-07:00"
 		},
 		{
+			"path": "github.com/facebookgo/ensure",
+			"revision": "71188606beeac086a6089098de2dc387d26d7d92",
+			"revisionTime": "2015-06-12T18:29:20Z"
+		},
+		{
+			"path": "github.com/facebookgo/freeport",
+			"revision": "d4adf43b75b9357dc7775f033e807a3411591522",
+			"revisionTime": "2015-06-12T18:29:05Z"
+		},
+		{
 			"path": "github.com/facebookgo/httpdown",
 			"revision": "9229879964ff32fc4e42c7ba6b4745efce39023c",
 			"revisionTime": "2015-08-07T22:21:07Z"
 		},
 		{
+			"path": "github.com/facebookgo/stack",
+			"revision": "3df46e3d0ab4255cd8a0a6bb79561f33d9910c24",
+			"revisionTime": "2015-06-12T18:29:13Z"
+		},
+		{
 			"path": "github.com/facebookgo/stats",
 			"revision": "31fb71caf5a4f04c9f8bb3fa8e7c2597ba6eb50a",
 			"revisionTime": "2015-06-12T18:29:15Z"
+		},
+		{
+			"path": "github.com/facebookgo/subset",
+			"revision": "8dac2c3c48703541e481feddf22975953d4ff842",
+			"revisionTime": "2015-06-12T18:29:17Z"
 		},
 		{
 			"path": "github.com/fatih/color",
@@ -44,23 +74,23 @@
 		},
 		{
 			"path": "github.com/gorilla/context",
-			"revision": "215affda49addc4c8ef7e2534915df2c8c35c6cd",
-			"revisionTime": "2014-12-17T08:02:51-08:00"
+			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
+			"revisionTime": "2015-08-19T22:12:45-07:00"
 		},
 		{
 			"path": "github.com/gorilla/mux",
-			"revision": "5112c33f3a6ef694c1e5784b68981f08b3f0327c",
-			"revisionTime": "2015-08-11T22:16:22-07:00"
+			"revision": "ee1815431e497d3850809578c93ab6705f1a19f7",
+			"revisionTime": "2015-08-19T22:15:06-07:00"
 		},
 		{
 			"path": "github.com/gorilla/rpc/v2",
-			"revision": "74aa4b5cceca1188df2c7128f7ede4c92893701e",
-			"revisionTime": "2015-08-09T21:43:58-07:00"
+			"revision": "2fdbf88eb105e2d0ffa30e7bbc998b56eca89ba2",
+			"revisionTime": "2015-08-19T22:16:17-07:00"
 		},
 		{
 			"path": "github.com/gorilla/rpc/v2/json",
-			"revision": "74aa4b5cceca1188df2c7128f7ede4c92893701e",
-			"revisionTime": "2015-08-09T21:43:58-07:00"
+			"revision": "2fdbf88eb105e2d0ffa30e7bbc998b56eca89ba2",
+			"revisionTime": "2015-08-19T22:16:17-07:00"
 		},
 		{
 			"path": "github.com/mattn/go-isatty",
@@ -69,8 +99,8 @@
 		},
 		{
 			"path": "github.com/minio/cli",
-			"revision": "ee386baecc113eef2b8945df429120a5aec319ef",
-			"revisionTime": "2015-08-19T11:23:55-07:00"
+			"revision": "be072a094b77c259fcb232a3bdef6ed26760a5e6",
+			"revisionTime": "2015-10-13T13:54:28-07:00"
 		},
 		{
 			"path": "github.com/olekukonko/ts",
@@ -86,6 +116,11 @@
 			"path": "github.com/shiena/ansicolor",
 			"revision": "a5e2b567a4dd6cc74545b8a4f27c9d63b9e7735b",
 			"revisionTime": "2015-07-19T16:15:31+09:00"
+		},
+		{
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "b8dc1cecf15bdaf1988d9e87aa7cd98d899a06d6",
+			"revisionTime": "2015-09-14T10:32:55+01:00"
 		},
 		{
 			"path": "github.com/weekface/mgorus",

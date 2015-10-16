@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // toString - Safely convert interface to string without causing panic.

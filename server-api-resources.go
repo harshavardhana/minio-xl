@@ -20,7 +20,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/minio/minio/pkg/donut"
+	"github.com/minio/minio-xl/pkg/donut"
 )
 
 // parse bucket url queries

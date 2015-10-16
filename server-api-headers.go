@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/minio/minio/pkg/donut"
+	"github.com/minio/minio-xl/pkg/donut"
 )
 
 //// helpers

@@ -22,7 +22,7 @@ import (
 	router "github.com/gorilla/mux"
 	jsonrpc "github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
-	"github.com/minio/minio/pkg/donut"
+	"github.com/minio/minio-xl/pkg/donut"
 )
 
 // registerAPI - register all the object API handlers to their respective paths

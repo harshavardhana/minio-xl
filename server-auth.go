@@ -20,7 +20,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // generateAccessKeyID - generate random alpha numeric value using only uppercase characters

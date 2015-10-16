@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/minio/minio/pkg/cpu"
+	"github.com/minio/minio-xl/pkg/cpu"
 	. "gopkg.in/check.v1"
 )
 

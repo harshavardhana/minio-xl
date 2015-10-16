@@ -21,9 +21,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/minio/minio/pkg/crypto/sha256"
-	"github.com/minio/minio/pkg/probe"
-	signv4 "github.com/minio/minio/pkg/signature"
+	"github.com/minio/minio-xl/pkg/crypto/sha256"
+	"github.com/minio/minio-xl/pkg/probe"
+	signv4 "github.com/minio/minio-xl/pkg/signature"
 )
 
 type signatureHandler struct {

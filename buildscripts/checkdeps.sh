@@ -105,7 +105,7 @@ check_golang_env() {
     if [ $? -eq 1 ]; then
         echo "ERROR"
         echo "GOROOT environment variable missing, please refer to Go installation document"
-        echo "https://github.com/minio/minio/blob/master/INSTALLGO.md#install-go-13"
+        echo "https://github.com/minio/minio-xl/blob/master/INSTALLGO.md#install-go-13"
         exit 1
     fi
 
@@ -113,7 +113,7 @@ check_golang_env() {
     if [ $? -eq 1 ]; then
         echo "ERROR"
         echo "GOPATH environment variable missing, please refer to Go installation document"
-        echo "https://github.com/minio/minio/blob/master/INSTALLGO.md#install-go-13"
+        echo "https://github.com/minio/minio-xl/blob/master/INSTALLGO.md#install-go-13"
         exit 1
     fi
 
@@ -121,7 +121,7 @@ check_golang_env() {
 
     if [ -z "${go_binary_path}" ] ; then
         echo "Cannot find go binary in your PATH configuration, please refer to Go installation document"
-        echo "https://github.com/minio/minio/blob/master/INSTALLGO.md#install-go-13"
+        echo "https://github.com/minio/minio-xl/blob/master/INSTALLGO.md#install-go-13"
         exit -1
     fi
 
@@ -133,7 +133,7 @@ check_golang_env() {
     if [[ !"$(dirname ${new_go_binary_path})" =~ *"${GOROOT%%*(/)}"* ]] ; then
         echo "The go binary found in your PATH configuration does not belong to the Go installation pointed by your GOROOT environment," \
             "please refer to Go installation document"
-        echo "https://github.com/minio/minio/blob/master/INSTALLGO.md#install-go-13"
+        echo "https://github.com/minio/minio-xl/blob/master/INSTALLGO.md#install-go-13"
         exit -1
     fi
 }
@@ -232,7 +232,7 @@ main() {
         echo "Please install them "
         echo "${MISSING}"
         echo
-        echo "Follow https://github.com/minio/minio/blob/master/INSTALLGO.md for further instructions"
+        echo "Follow https://github.com/minio/minio-xl/blob/master/INSTALLGO.md for further instructions"
         exit 1
     fi
     echo "Done"

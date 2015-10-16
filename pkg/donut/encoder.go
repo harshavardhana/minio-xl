@@ -17,8 +17,8 @@
 package donut
 
 import (
-	encoding "github.com/minio/minio/pkg/erasure"
-	"github.com/minio/minio/pkg/probe"
+	encoding "github.com/minio/minio-xl/pkg/erasure"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 // encoder internal struct

@@ -26,8 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio/pkg/crypto/sha256"
-	"github.com/minio/minio/pkg/probe"
+	"github.com/minio/minio-xl/pkg/crypto/sha256"
+	"github.com/minio/minio-xl/pkg/probe"
 )
 
 type rpcSignatureHandler struct {
