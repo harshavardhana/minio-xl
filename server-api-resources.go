@@ -52,9 +52,3 @@ func getObjectResources(values url.Values) (v donut.ObjectResourcesMetadata) {
 	v.EncodingType = values.Get("encoding-type")
 	return
 }
-
-// check if req quere values carry uploads resource
-func isRequestUploads(values url.Values) bool {
-	_, ok := values["uploads"]
-	return ok
-}

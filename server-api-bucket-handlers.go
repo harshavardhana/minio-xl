@@ -90,11 +90,6 @@ func (api API) ListObjectsHandler(w http.ResponseWriter, req *http.Request) {
 		<-op.ProceedCh
 	}
 
-	if isRequestUploads(req.URL.Query()) {
-		api.ListMultipartUploadsHandler(w, req)
-		return
-	}
-
 	resources := getBucketResources(req.URL.Query())
 	if resources.Maxkeys < 0 {
 		writeErrorResponse(w, req, InvalidMaxKeys, req.URL.Path)
@@ -316,7 +311,7 @@ func (api API) PostPolicyBucketHandler(w http.ResponseWriter, req *http.Request)
 		case donut.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
 		case donut.ObjectExists:
-			writeErrorResponse(w, req, MethodNotAllowed, req.URL.Path)
+			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
 		case donut.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.DoesNotMatch:
