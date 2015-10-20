@@ -196,7 +196,7 @@ func (api API) PutObjectHandler(w http.ResponseWriter, req *http.Request) {
 		case donut.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
 		case donut.ObjectExists:
-			writeErrorResponse(w, req, MethodNotAllowed, req.URL.Path)
+			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
 		case donut.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.MissingDateHeader:
@@ -231,11 +231,6 @@ func (api API) NewMultipartUploadHandler(w http.ResponseWriter, req *http.Reques
 		<-op.ProceedCh
 	}
 
-	if !isRequestUploads(req.URL.Query()) {
-		writeErrorResponse(w, req, MethodNotAllowed, req.URL.Path)
-		return
-	}
-
 	var object, bucket string
 	vars := mux.Vars(req)
 	bucket = vars["bucket"]
@@ -246,7 +241,7 @@ func (api API) NewMultipartUploadHandler(w http.ResponseWriter, req *http.Reques
 		errorIf(err.Trace(), "NewMultipartUpload failed.", nil)
 		switch err.ToGoError().(type) {
 		case donut.ObjectExists:
-			writeErrorResponse(w, req, MethodNotAllowed, req.URL.Path)
+			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
 		}
@@ -340,7 +335,7 @@ func (api API) PutObjectPartHandler(w http.ResponseWriter, req *http.Request) {
 		case donut.InvalidUploadID:
 			writeErrorResponse(w, req, NoSuchUpload, req.URL.Path)
 		case donut.ObjectExists:
-			writeErrorResponse(w, req, MethodNotAllowed, req.URL.Path)
+			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
 		case donut.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.DoesNotMatch:
@@ -505,12 +500,10 @@ func (api API) CompleteMultipartUploadHandler(w http.ResponseWriter, req *http.R
 
 // DeleteBucketHandler - Delete bucket
 func (api API) DeleteBucketHandler(w http.ResponseWriter, req *http.Request) {
-	error := getErrorCode(MethodNotAllowed)
-	w.WriteHeader(error.HTTPStatusCode)
+	writeErrorResponse(w, req, DeleteNotAllowed, req.URL.Path)
 }
 
 // DeleteObjectHandler - Delete object
 func (api API) DeleteObjectHandler(w http.ResponseWriter, req *http.Request) {
-	error := getErrorCode(MethodNotAllowed)
-	w.WriteHeader(error.HTTPStatusCode)
+	writeErrorResponse(w, req, DeleteNotAllowed, req.URL.Path)
 }

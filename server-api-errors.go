@@ -66,16 +66,12 @@ const (
 	RequestTimeTooSkewed
 	SignatureDoesNotMatch
 	TooManyBuckets
-	MethodNotAllowed
+	MutableWriteNotAllowed
+	DeleteNotAllowed
 	InvalidPart
 	InvalidPartOrder
 	AuthorizationHeaderMalformed
 	MalformedPOSTRequest
-)
-
-// Error codes, non exhaustive list - standard HTTP errors
-const (
-	NotAcceptable = iota + 31
 )
 
 // APIError code to Error structure map
@@ -205,15 +201,15 @@ var errorCodeResponse = map[int]APIError{
 		Description:    "You have attempted to create more buckets than allowed.",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
-	MethodNotAllowed: {
-		Code:           "MethodNotAllowed",
-		Description:    "The specified method is not allowed against this resource.",
+	MutableWriteNotAllowed: {
+		Code:           "MutableWriteNotAllowed",
+		Description:    "Mutable write method not allowed against this resource.",
 		HTTPStatusCode: http.StatusMethodNotAllowed,
 	},
-	NotAcceptable: {
-		Code:           "NotAcceptable",
-		Description:    "The requested resource is only capable of generating content not acceptable according to the Accept headers sent in the request.",
-		HTTPStatusCode: http.StatusNotAcceptable,
+	DeleteNotAllowed: {
+		Code:           "DeleteNotAllowed",
+		Description:    "Delete method not allowed against this resource.",
+		HTTPStatusCode: http.StatusMethodNotAllowed,
 	},
 	InvalidPart: {
 		Code:           "InvalidPart",
