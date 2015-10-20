@@ -17,10 +17,10 @@ import (
 	"github.com/minio/minio-xl/pkg/cpu"
 )
 
-// The size of a SHA1 checksum in bytes.
+// Size - The size of a SHA1 checksum in bytes.
 const Size = 20
 
-// The blocksize of SHA1 in bytes.
+// BlockSize - The blocksize of SHA1 in bytes.
 const BlockSize = 64
 
 const (

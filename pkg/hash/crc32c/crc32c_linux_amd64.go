@@ -18,7 +18,7 @@ import (
 	"io"
 )
 
-// The size of a CRC-32 checksum in bytes.
+// Size - The size of a CRC-32 checksum in bytes.
 const Size = 4
 
 // digest represents the partial evaluation of a checksum.
