@@ -5,21 +5,21 @@ If you do not have a working Golang environment setup please follow [Golang Inst
 ### Setup your Minio Github Repository
 Fork [Minio upstream](https://github.com/minio/minio-xl/fork) source repository to your own personal repository. Copy the URL and pass it to ``go get`` command. Go uses git to clone a copy into your project workspace folder.
 ```sh
-$ mkdir -p $GOPATH/src/github.com/minio
-$ cd $GOPATH/src/github.com/minio
-$ git clone https://github.com/$USER_ID/minio-xl
-$ cd minio-xl
+$ git clone -q https://github.com/$USER_ID/minio-xl $GOPATH/src/github.com/minio/minio-xl
+$ cd $GOPATH/src/github.com/minio/minio-xl
 ```
 
 ### Compiling Minio from source
 Minio uses ``Makefile`` to wrap around some of the limitations of ``go`` build system. To compile Minio source, simply change to your workspace folder and type ``make``.
 ```sh
 $ make
-Checking if proper environment variables are set.. Done
+Checking deps:
+Check for supported arch.. Check for supported os.. Checking if proper environment variables are set.. Done
 ...
 Checking dependencies for Minio.. Done
-Installed govet
-Building Libraries
+Checking if project is at /Users/harsha/mygo
+Installed golint:
+Installed vet:
 ...
 ...
 ```
@@ -28,16 +28,17 @@ Building Libraries
 ```sh
 $ cd $GOPATH/src/github.com/minio/minio-xl
 $ git remote add upstream https://github.com/minio/minio-xl
-$ git fetch upstream
-$ git merge upstream/master
+$ git fetch upstream; git merge upstream/master
 ...
 ...
-$ make
-Checking if proper environment variables are set.. Done
+Checking deps:
+Check for supported arch.. Check for supported os.. Checking if proper environment variables are set.. Done
 ...
 Checking dependencies for Minio.. Done
-Installed govet
-Building Libraries
+Checking if project is at /Users/harsha/mygo
+Installed golint:
+Installed vet:
+...
 ...
 ```
 
