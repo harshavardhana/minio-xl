@@ -9,9 +9,10 @@ checkgopath:
 	@for miniopath in $(echo ${GOPATH} | sed 's/:/\n/g'); do if [ ! -d ${miniopath}/src/github.com/minio/minio ]; then echo "Project not found in ${miniopath}, please follow instructions provided at https://github.com/minio/minio-xl/blob/master/CONTRIBUTING.md#setup-your-minio-github-repository" && exit 1; fi done
 
 getdeps: checkdeps checkgopath
-	@go get github.com/golang/lint/golint && echo "Installed golint:"
-	@go get golang.org/x/tools/cmd/vet && echo "Installed vet:"
-	@go get github.com/fzipp/gocyclo && echo "Installed gocyclo:"
+	@go get -u github.com/golang/lint/golint && echo "Installed golint:"
+	@go get -u golang.org/x/tools/cmd/vet && echo "Installed vet:"
+	@go get -u github.com/fzipp/gocyclo && echo "Installed gocyclo:"
+	@go get -u github.com/remyoudompheng/go-misc/deadcode && echo "Installed deadcode:"
 
 verifiers: getdeps vet fmt lint cyclo
 
@@ -37,7 +38,7 @@ cyclo:
 	@GO15VENDOREXPERIMENT=1 gocyclo -over 25 *.go
 	@GO15VENDOREXPERIMENT=1 gocyclo -over 25 pkg
 
-build: config getdeps verifiers
+build: constants getdeps verifiers
 	@echo "Installing minio:"
 	@GO15VENDOREXPERIMENT=1 go generate ./...
 
@@ -49,11 +50,9 @@ test: build
 gomake-all: build
 	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio-xl
 
-install: gomake-all
-
-config:
-	@echo "Generating new config.go"
-	@GO15VENDOREXPERIMENT=1 go run buildscripts/config-gen.go
+constants:
+	@echo "Generating new build-constants.go"
+	@GO15VENDOREXPERIMENT=1 go run buildscripts/gen-constants.go
 
 pkg-add:
 	@GO15VENDOREXPERIMENT=1 govendor add $(PKG)
@@ -64,9 +63,11 @@ pkg-update:
 pkg-remove:
 	@GO15VENDOREXPERIMENT=1 govendor remove $(PKG)
 
+install: gomake-all
+
 clean:
 	@echo "Cleaning up all the generated files:"
-	@rm -fv config.go
+	@rm -fv build-constants.go
 	@rm -fv cover.out
 	@rm -fv minio
 	@rm -fv pkg/erasure/*.syso
