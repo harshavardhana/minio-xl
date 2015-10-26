@@ -23,11 +23,11 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-type VersionSuite struct{}
+type ConfigSuite struct{}
 
-var _ = Suite(&VersionSuite{})
+var _ = Suite(&ConfigSuite{})
 
-func (s *VersionSuite) TestVersion(c *C) {
+func (s *ConfigSuite) TestVersion(c *C) {
 	_, err := time.Parse(minioVersion, http.TimeFormat)
 	c.Assert(err, NotNil)
 }

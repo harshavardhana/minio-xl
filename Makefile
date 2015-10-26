@@ -37,7 +37,7 @@ cyclo:
 	@GO15VENDOREXPERIMENT=1 gocyclo -over 25 *.go
 	@GO15VENDOREXPERIMENT=1 gocyclo -over 25 pkg
 
-build: getdeps verifiers
+build: config getdeps verifiers
 	@echo "Installing minio:"
 	@GO15VENDOREXPERIMENT=1 go generate ./...
 
@@ -49,13 +49,11 @@ test: build
 gomake-all: build
 	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio-xl
 
-release: version
-	@echo "Installing minio (new version):"
-	@GO15VENDOREXPERIMENT=1 go install github.com/minio/minio-xl
+install: gomake-all
 
-version:
-	@echo "Generating new version.go"
-	@GO15VENDOREXPERIMENT=1 go run buildscripts/genversion.go
+config:
+	@echo "Generating new config.go"
+	@GO15VENDOREXPERIMENT=1 go run buildscripts/config-gen.go
 
 pkg-add:
 	@GO15VENDOREXPERIMENT=1 govendor add $(PKG)
@@ -66,10 +64,9 @@ pkg-update:
 pkg-remove:
 	@GO15VENDOREXPERIMENT=1 govendor remove $(PKG)
 
-install: gomake-all
-
 clean:
 	@echo "Cleaning up all the generated files:"
+	@rm -fv config.go
 	@rm -fv cover.out
 	@rm -fv minio
 	@rm -fv pkg/erasure/*.syso
