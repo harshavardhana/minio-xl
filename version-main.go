@@ -20,13 +20,13 @@ import "github.com/minio/cli"
 
 var versionCmd = cli.Command{
 	Name:   "version",
-	Usage:  "Print version",
+	Usage:  "Print version.",
 	Action: mainVersion,
 	CustomHelpTemplate: `NAME:
-   mc {{.Name}} - {{.Usage}}
+   minio-xl {{.Name}} - {{.Usage}}
 
 USAGE:
-   mc {{.Name}} {{if .Description}}
+   minio-xl {{.Name}} {{if .Description}}
 
 EXAMPLES:
 

@@ -49,7 +49,7 @@ func genConstants(version string) {
 	t := template.Must(template.New("constants").Parse(constantsTemplate))
 	constantsFile, e := os.OpenFile("build-constants.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		fmt.Printf("gen-constants: Unable to generate ‘build-constants.go’. Error: %s.\n", e)
+		fmt.Printf("gen-constants: Unable to create ‘build-constants.go’. Error: %s.\n", e)
 		os.Exit(1)
 	}
 	defer constantsFile.Close()
