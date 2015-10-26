@@ -154,7 +154,7 @@ func main() {
 	// Initialize probe.
 	probe.Init()
 	// Include release tag in the debug dumps.
-	probe.SetAppInfo("Release-Tag", minioReleaseTag)
+	probe.SetAppInfo("Commit", minioShortCommitID)
 
 	app := registerApp()
 	app.Before = func(c *cli.Context) error {

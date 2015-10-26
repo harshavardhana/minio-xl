@@ -36,4 +36,5 @@ EXAMPLES:
 func mainVersion(ctxx *cli.Context) {
 	Println("Version: " + minioVersion)
 	Println("Release-Tag: " + minioReleaseTag)
+	Println("Commit-ID: " + minioCommitID)
 }
