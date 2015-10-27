@@ -91,7 +91,7 @@ func findClosestCommands(command string) []string {
 
 func registerApp() *cli.App {
 	// register all commands
-	registerCommand(donutCmd)
+	registerCommand(xlCmd)
 	registerCommand(serverCmd)
 	registerCommand(controllerCmd)
 	registerCommand(versionCmd)
@@ -108,16 +108,20 @@ func registerApp() *cli.App {
 
 	// set up app
 	app := cli.NewApp()
-	app.Name = "minio"
+	app.Name = "minio-xl"
 	// hide --version flag, version is a command
 	app.HideVersion = true
 	app.Author = "Minio.io"
 	app.Usage = "Minio Cloud Storage"
+	app.Description = `This version of the Minio binary is built using XL distribute erasure code backend. XL erasure codes each data block with - 8 Data x 8 Parity. XL is designed for immutable objects.`
 	app.Flags = flags
 	app.Commands = commands
 
 	app.CustomAppHelpTemplate = `NAME:
   {{.Name}} - {{.Usage}}
+
+DESCRIPTION:
+  {{.Description}}
 
 USAGE:
   {{.Name}} {{if .Flags}}[global flags] {{end}}command{{if .Flags}} [command flags]{{end}} [arguments...]
@@ -129,14 +133,14 @@ GLOBAL FLAGS:
   {{range .Flags}}{{.}}
   {{end}}{{end}}
 VERSION:
-  ` + minioVersion +
+  ` + minioXLVersion +
 		`{{range $key, $value := ExtraInfo}}
 {{$key}}:
   {{$value}}
 {{end}}
 `
 	app.CommandNotFound = func(ctx *cli.Context, command string) {
-		msg := fmt.Sprintf("‘%s’ is not a minio sub-command. See ‘minio help’.", command)
+		msg := fmt.Sprintf("‘%s’ is not a minio-xl sub-command. See ‘minio-xl help’.", command)
 		closestCommands := findClosestCommands(command)
 		if len(closestCommands) > 0 {
 			msg += fmt.Sprintf("\n\nDid you mean one of these?\n")
@@ -154,7 +158,7 @@ func main() {
 	// Initialize probe.
 	probe.Init()
 	// Include release tag in the debug dumps.
-	probe.SetAppInfo("Commit", minioShortCommitID)
+	probe.SetAppInfo("Commit", minioXLShortCommitID)
 
 	app := registerApp()
 	app.Before = func(c *cli.Context) error {

@@ -21,9 +21,9 @@ import (
 	"runtime"
 )
 
-type donutRPCService struct{}
+type xlRPCService struct{}
 
-func (s *donutRPCService) ListNodes(r *http.Request, arg *DonutArg, rep *ListNodesRep) error {
+func (s *xlRPCService) ListNodes(r *http.Request, arg *XLArg, rep *ListNodesRep) error {
 	rep.Nodes = []struct {
 		Hostname string `json:"hostname"`
 		Address  string `json:"address"`
@@ -45,12 +45,12 @@ const (
 	GB = 1024 * 1024 * 1024
 )
 
-func (s *donutRPCService) StorageStats(r *http.Request, arg *DonutArg, rep *StorageStatsRep) error {
+func (s *xlRPCService) StorageStats(r *http.Request, arg *XLArg, rep *StorageStatsRep) error {
 	rep.Buckets = []BucketStats{{"bucket1", 4 * TB}, {"bucket2", 120 * TB}, {"bucket3", 45 * TB}}
 	return nil
 }
 
-func (s *donutRPCService) RebalanceStats(r *http.Request, arg *DonutArg, rep *RebalanceStatsRep) error {
+func (s *xlRPCService) RebalanceStats(r *http.Request, arg *XLArg, rep *RebalanceStatsRep) error {
 	rep.State = make(map[string]string)
 	rep.State["bucket1/obj1"] = "inProgress"
 	rep.State["bucket2/obj2"] = "finished"
@@ -59,7 +59,7 @@ func (s *donutRPCService) RebalanceStats(r *http.Request, arg *DonutArg, rep *Re
 	return nil
 }
 
-func (s *donutRPCService) Version(r *http.Request, arg *ServerArg, rep *DonutVersionRep) error {
+func (s *xlRPCService) Version(r *http.Request, arg *ServerArg, rep *XLVersionRep) error {
 	rep.Version = "0.1.0"
 	rep.Architecture = runtime.GOARCH
 	rep.OperatingSystem = runtime.GOOS

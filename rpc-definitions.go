@@ -25,8 +25,8 @@ type AuthArgs struct {
 	User string `json:"user"`
 }
 
-// DonutArg donut params
-type DonutArg struct{}
+// XLArg xl params
+type XLArg struct{}
 
 // ServerArg server params
 type ServerArg struct{}
@@ -150,7 +150,7 @@ type RebalanceStatsRep struct {
 	State map[string]string `json:"rebalanceState"`
 }
 
-// ListNodesRep all nodes part of donut cluster
+// ListNodesRep all nodes part of xl cluster
 type ListNodesRep struct {
 	Nodes []struct {
 		Hostname string `json:"hostname"`
@@ -159,8 +159,8 @@ type ListNodesRep struct {
 	} `json:"nodes"`
 }
 
-// DonutVersionRep reply donut on disk format version
-type DonutVersionRep struct {
+// XLVersionRep reply xl on disk format version
+type XLVersionRep struct {
 	Version         string `json:"version"`
 	Architecture    string `json:"arch"`
 	OperatingSystem string `json:"os"`

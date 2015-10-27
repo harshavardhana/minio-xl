@@ -2,7 +2,7 @@
 **/*.swp
 cover.out
 *~
-minio
+minio-xl
 !*/
 site/
 **/*.test

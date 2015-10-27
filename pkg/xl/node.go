@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
-	"github.com/minio/minio-xl/pkg/donut/disk"
 	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/xl/disk"
 )
 
 // node struct internal

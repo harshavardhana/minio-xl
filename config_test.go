@@ -28,6 +28,6 @@ type ConfigSuite struct{}
 var _ = Suite(&ConfigSuite{})
 
 func (s *ConfigSuite) TestVersion(c *C) {
-	_, err := time.Parse(minioVersion, http.TimeFormat)
+	_, err := time.Parse(minioXLVersion, http.TimeFormat)
 	c.Assert(err, NotNil)
 }

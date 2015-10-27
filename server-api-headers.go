@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 //// helpers
@@ -46,7 +46,7 @@ func generateRequestID() []byte {
 func setCommonHeaders(w http.ResponseWriter, contentLength int) {
 	// set unique request ID for each reply
 	w.Header().Set("X-Amz-Request-Id", string(generateRequestID()))
-	w.Header().Set("Server", ("Minio/" + minioReleaseTag + " (" + runtime.GOOS + ";" + runtime.GOARCH + ")"))
+	w.Header().Set("Server", ("Minio/" + minioXLReleaseTag + " (" + runtime.GOOS + ";" + runtime.GOARCH + ")"))
 	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Connection", "close")
 	// should be set to '0' by default
@@ -63,7 +63,7 @@ func encodeErrorResponse(response interface{}) []byte {
 }
 
 // Write object header
-func setObjectHeaders(w http.ResponseWriter, metadata donut.ObjectMetadata, contentRange *httpRange) {
+func setObjectHeaders(w http.ResponseWriter, metadata xl.ObjectMetadata, contentRange *httpRange) {
 	// set common headers
 	if contentRange != nil {
 		if contentRange.length > 0 {

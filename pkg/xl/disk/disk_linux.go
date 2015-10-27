@@ -18,7 +18,7 @@ package disk
 
 import "strconv"
 
-// fsType2StringMap - list of filesystems supported by donut on linux
+// fsType2StringMap - list of filesystems supported by xl on linux
 var fsType2StringMap = map[string]string{
 	"1021994":  "TMPFS",
 	"137d":     "EXT",

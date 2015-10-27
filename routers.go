@@ -22,7 +22,7 @@ import (
 	router "github.com/gorilla/mux"
 	jsonrpc "github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
-	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 // registerAPI - register all the object API handlers to their respective paths
@@ -59,19 +59,19 @@ type APIOperation struct {
 // API container for API and also carries OP (operation) channel
 type API struct {
 	OP        chan APIOperation
-	Donut     donut.Interface
+	XL        xl.Interface
 	Anonymous bool // do not checking for incoming signatures, allow all requests
 }
 
 // getNewAPI instantiate a new minio API
 func getNewAPI(anonymous bool) API {
 	// ignore errors for now
-	d, err := donut.New()
-	fatalIf(err.Trace(), "Instantiating donut failed.", nil)
+	d, err := xl.New()
+	fatalIf(err.Trace(), "Instantiating xl failed.", nil)
 
 	return API{
 		OP:        make(chan APIOperation),
-		Donut:     d,
+		XL:        d,
 		Anonymous: anonymous,
 	}
 }
@@ -102,7 +102,7 @@ func getServerRPCHandler(anonymous bool) http.Handler {
 	s := jsonrpc.NewServer()
 	s.RegisterCodec(json.NewCodec(), "application/json")
 	s.RegisterService(new(serverRPCService), "Server")
-	s.RegisterService(new(donutRPCService), "Donut")
+	s.RegisterService(new(xlRPCService), "XL")
 	mux := router.NewRouter()
 	mux.Handle("/rpc", s)
 

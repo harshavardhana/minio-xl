@@ -47,7 +47,7 @@ func getAuthConfigPath() (string, *probe.Error) {
 	if err != nil {
 		return "", probe.NewError(err)
 	}
-	authConfigPath := filepath.Join(u.HomeDir, ".minio")
+	authConfigPath := filepath.Join(u.HomeDir, ".minio-xl")
 	return authConfigPath, nil
 }
 

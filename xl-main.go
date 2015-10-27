@@ -21,49 +21,49 @@ import (
 	"path/filepath"
 
 	"github.com/minio/cli"
-	"github.com/minio/minio-xl/pkg/donut"
 	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 var (
-	donutSubCommands = []cli.Command{
+	xlSubCommands = []cli.Command{
 		{
 			Name:        "make",
-			Description: "make a donut",
-			Action:      makeDonutMain,
+			Description: "make a xl",
+			Action:      makeXLMain,
 			CustomHelpTemplate: `NAME:
-  minio donut {{.Name}} - {{.Description}}
+  minio-xl xl {{.Name}} - {{.Description}}
 
 USAGE:
-  minio donut {{.Name}} DONUTNAME [DISKS...]
+  minio-xl xl {{.Name}} XL-NAME [DISKS...]
 
 EXAMPLES:
-  1. Make a donut with 4 exports
-      $ minio donut {{.Name}} mongodb-backup /mnt/export1 /mnt/export2 /mnt/export3 /mnt/export4
+  1. Make a xl with 4 exports
+      $ minio-xl xl {{.Name}} mongodb-backup /mnt/export1 /mnt/export2 /mnt/export3 /mnt/export4
 
-  2. Make a donut with 16 exports
-      $ minio donut {{.Name}} operational-data /mnt/export1 /mnt/export2 /mnt/export3 /mnt/export4 /mnt/export5 \
+  2. Make a xl with 16 exports
+      $ minio-xl xl {{.Name}} operational-data /mnt/export1 /mnt/export2 /mnt/export3 /mnt/export4 /mnt/export5 \
        /mnt/export6 /mnt/export7 /mnt/export8 /mnt/export9 /mnt/export10 /mnt/export11 \
        /mnt/export12 /mnt/export13 /mnt/export14 /mnt/export15 /mnt/export16
 `,
 		},
 	}
 
-	donutCmd = cli.Command{
-		Name:        "donut",
-		Usage:       "Create and manage a donut configuration",
-		Subcommands: donutSubCommands,
+	xlCmd = cli.Command{
+		Name:        "xl",
+		Usage:       "Create and manage a xl configuration",
+		Subcommands: xlSubCommands,
 	}
 )
 
-func makeDonutMain(c *cli.Context) {
+func makeXLMain(c *cli.Context) {
 	if !c.Args().Present() || c.Args().First() == "help" {
 		cli.ShowCommandHelpAndExit(c, "make", 1)
 	}
-	donutName := c.Args().First()
+	xlName := c.Args().First()
 	if c.Args().First() != "" {
-		if !donut.IsValidDonut(donutName) {
-			Fatalf("Invalid donutname %s\n", donutName)
+		if !xl.IsValidXL(xlName) {
+			Fatalf("Invalid xlname %s\n", xlName)
 		}
 	}
 	var disks []string
@@ -74,7 +74,7 @@ func makeDonutMain(c *cli.Context) {
 		disks = append(disks, disk)
 	}
 	for _, disk := range disks {
-		if err := os.MkdirAll(filepath.Join(disk, donutName), 0700); err != nil {
+		if err := os.MkdirAll(filepath.Join(disk, xlName), 0700); err != nil {
 			Fatalln(probe.NewError(err))
 		}
 	}
@@ -83,16 +83,16 @@ func makeDonutMain(c *cli.Context) {
 	if err != nil {
 		Fatalln(probe.NewError(err))
 	}
-	donutConfig := &donut.Config{}
-	donutConfig.Version = "0.0.1"
-	donutConfig.DonutName = donutName
-	donutConfig.NodeDiskMap = make(map[string][]string)
+	xlConfig := &xl.Config{}
+	xlConfig.Version = "0.0.1"
+	xlConfig.XLName = xlName
+	xlConfig.NodeDiskMap = make(map[string][]string)
 	// keep it in exact order as it was specified, do not try to sort disks
-	donutConfig.NodeDiskMap[hostname] = disks
+	xlConfig.NodeDiskMap[hostname] = disks
 	// default cache is unlimited
-	donutConfig.MaxSize = 512000000
+	xlConfig.MaxSize = 512000000
 
-	if err := donut.SaveConfig(donutConfig); err != nil {
+	if err := xl.SaveConfig(xlConfig); err != nil {
 		Fatalln(err.Trace())
 	}
 

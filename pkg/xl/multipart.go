@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"bytes"
@@ -34,17 +34,17 @@ import (
 	"time"
 
 	"github.com/minio/minio-xl/pkg/crypto/sha256"
-	"github.com/minio/minio-xl/pkg/donut/cache/data"
 	"github.com/minio/minio-xl/pkg/probe"
 	signv4 "github.com/minio/minio-xl/pkg/signature"
+	"github.com/minio/minio-xl/pkg/xl/cache/data"
 )
 
 /// V2 API functions
 
 // NewMultipartUpload - initiate a new multipart session
-func (donut API) NewMultipartUpload(bucket, key, contentType string) (string, *probe.Error) {
-	donut.lock.Lock()
-	defer donut.lock.Unlock()
+func (xl API) NewMultipartUpload(bucket, key, contentType string) (string, *probe.Error) {
+	xl.lock.Lock()
+	defer xl.lock.Unlock()
 
 	if !IsValidBucket(bucket) {
 		return "", probe.NewError(BucketNameInvalid{Bucket: bucket})
@@ -52,13 +52,13 @@ func (donut API) NewMultipartUpload(bucket, key, contentType string) (string, *p
 	if !IsValidObjectName(key) {
 		return "", probe.NewError(ObjectNameInvalid{Object: key})
 	}
-	//	if len(donut.config.NodeDiskMap) > 0 {
-	//		return donut.newMultipartUpload(bucket, key, contentType)
+	//	if len(xl.config.NodeDiskMap) > 0 {
+	//		return xl.newMultipartUpload(bucket, key, contentType)
 	//	}
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return "", probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	objectKey := bucket + "/" + key
 	if _, ok := storedBucket.objectMetadata[objectKey]; ok == true {
 		return "", probe.NewError(ObjectExists{Object: key})
@@ -74,16 +74,16 @@ func (donut API) NewMultipartUpload(bucket, key, contentType string) (string, *p
 	}
 	storedBucket.partMetadata[key] = make(map[int]PartMetadata)
 	multiPartCache := data.NewCache(0)
-	multiPartCache.OnEvicted = donut.evictedPart
-	donut.multiPartObjects[uploadID] = multiPartCache
-	donut.storedBuckets.Set(bucket, storedBucket)
+	multiPartCache.OnEvicted = xl.evictedPart
+	xl.multiPartObjects[uploadID] = multiPartCache
+	xl.storedBuckets.Set(bucket, storedBucket)
 	return uploadID, nil
 }
 
 // AbortMultipartUpload - abort an incomplete multipart session
-func (donut API) AbortMultipartUpload(bucket, key, uploadID string) *probe.Error {
-	donut.lock.Lock()
-	defer donut.lock.Unlock()
+func (xl API) AbortMultipartUpload(bucket, key, uploadID string) *probe.Error {
+	xl.lock.Lock()
+	defer xl.lock.Unlock()
 
 	if !IsValidBucket(bucket) {
 		return probe.NewError(BucketNameInvalid{Bucket: bucket})
@@ -91,28 +91,28 @@ func (donut API) AbortMultipartUpload(bucket, key, uploadID string) *probe.Error
 	if !IsValidObjectName(key) {
 		return probe.NewError(ObjectNameInvalid{Object: key})
 	}
-	// TODO: multipart support for donut is broken, since we haven't finalized the format in which
+	// TODO: multipart support for xl is broken, since we haven't finalized the format in which
 	//       it can be stored, disabling this for now until we get the underlying layout stable.
 	//
-	//	if len(donut.config.NodeDiskMap) > 0 {
-	//		return donut.abortMultipartUpload(bucket, key, uploadID)
+	//	if len(xl.config.NodeDiskMap) > 0 {
+	//		return xl.abortMultipartUpload(bucket, key, uploadID)
 	//	}
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	if storedBucket.multiPartSession[key].UploadID != uploadID {
 		return probe.NewError(InvalidUploadID{UploadID: uploadID})
 	}
-	donut.cleanupMultipartSession(bucket, key, uploadID)
+	xl.cleanupMultipartSession(bucket, key, uploadID)
 	return nil
 }
 
 // CreateObjectPart - create a part in a multipart session
-func (donut API) CreateObjectPart(bucket, key, uploadID string, partID int, contentType, expectedMD5Sum string, size int64, data io.Reader, signature *signv4.Signature) (string, *probe.Error) {
-	donut.lock.Lock()
-	etag, err := donut.createObjectPart(bucket, key, uploadID, partID, "", expectedMD5Sum, size, data, signature)
-	donut.lock.Unlock()
+func (xl API) CreateObjectPart(bucket, key, uploadID string, partID int, contentType, expectedMD5Sum string, size int64, data io.Reader, signature *signv4.Signature) (string, *probe.Error) {
+	xl.lock.Lock()
+	etag, err := xl.createObjectPart(bucket, key, uploadID, partID, "", expectedMD5Sum, size, data, signature)
+	xl.lock.Unlock()
 	// possible free
 	debug.FreeOSMemory()
 
@@ -120,18 +120,18 @@ func (donut API) CreateObjectPart(bucket, key, uploadID string, partID int, cont
 }
 
 // createObject - internal wrapper function called by CreateObjectPart
-func (donut API) createObjectPart(bucket, key, uploadID string, partID int, contentType, expectedMD5Sum string, size int64, data io.Reader, signature *signv4.Signature) (string, *probe.Error) {
+func (xl API) createObjectPart(bucket, key, uploadID string, partID int, contentType, expectedMD5Sum string, size int64, data io.Reader, signature *signv4.Signature) (string, *probe.Error) {
 	if !IsValidBucket(bucket) {
 		return "", probe.NewError(BucketNameInvalid{Bucket: bucket})
 	}
 	if !IsValidObjectName(key) {
 		return "", probe.NewError(ObjectNameInvalid{Object: key})
 	}
-	// TODO: multipart support for donut is broken, since we haven't finalized the format in which
+	// TODO: multipart support for xl is broken, since we haven't finalized the format in which
 	//       it can be stored, disabling this for now until we get the underlying layout stable.
 	//
 	/*
-		if len(donut.config.NodeDiskMap) > 0 {
+		if len(xl.config.NodeDiskMap) > 0 {
 			metadata := make(map[string]string)
 			if contentType == "" {
 				contentType = "application/octet-stream"
@@ -146,17 +146,17 @@ func (donut API) createObjectPart(bucket, key, uploadID string, partID int, cont
 				}
 				expectedMD5Sum = hex.EncodeToString(expectedMD5SumBytes)
 			}
-			partMetadata, err := donut.putObjectPart(bucket, key, expectedMD5Sum, uploadID, partID, data, size, metadata, signature)
+			partMetadata, err := xl.putObjectPart(bucket, key, expectedMD5Sum, uploadID, partID, data, size, metadata, signature)
 			if err != nil {
 				return "", err.Trace()
 			}
 			return partMetadata.ETag, nil
 		}
 	*/
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return "", probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	strBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	strBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	// Verify upload id
 	if strBucket.multiPartSession[key].UploadID != uploadID {
 		return "", probe.NewError(InvalidUploadID{UploadID: uploadID})
@@ -194,7 +194,7 @@ func (donut API) createObjectPart(bucket, key, uploadID string, partID int, cont
 		if length != 0 {
 			hash.Write(byteBuffer[0:length])
 			sha256hash.Write(byteBuffer[0:length])
-			ok := donut.multiPartObjects[uploadID].Append(partID, byteBuffer[0:length])
+			ok := xl.multiPartObjects[uploadID].Append(partID, byteBuffer[0:length])
 			if !ok {
 				return "", probe.NewError(InternalError{})
 			}
@@ -203,7 +203,7 @@ func (donut API) createObjectPart(bucket, key, uploadID string, partID int, cont
 		}
 	}
 	if totalLength != size {
-		donut.multiPartObjects[uploadID].Delete(partID)
+		xl.multiPartObjects[uploadID].Delete(partID)
 		return "", probe.NewError(IncompleteBody{Bucket: bucket, Object: key})
 	}
 	if err != io.EOF {
@@ -243,25 +243,25 @@ func (donut API) createObjectPart(bucket, key, uploadID string, partID int, cont
 	multiPartSession := strBucket.multiPartSession[key]
 	multiPartSession.TotalParts++
 	strBucket.multiPartSession[key] = multiPartSession
-	donut.storedBuckets.Set(bucket, strBucket)
+	xl.storedBuckets.Set(bucket, strBucket)
 	return md5Sum, nil
 }
 
 // cleanupMultipartSession invoked during an abort or complete multipart session to cleanup session from memory
-func (donut API) cleanupMultipartSession(bucket, key, uploadID string) {
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+func (xl API) cleanupMultipartSession(bucket, key, uploadID string) {
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	for i := 1; i <= storedBucket.multiPartSession[key].TotalParts; i++ {
-		donut.multiPartObjects[uploadID].Delete(i)
+		xl.multiPartObjects[uploadID].Delete(i)
 	}
 	delete(storedBucket.multiPartSession, key)
 	delete(storedBucket.partMetadata, key)
-	donut.storedBuckets.Set(bucket, storedBucket)
+	xl.storedBuckets.Set(bucket, storedBucket)
 }
 
-func (donut API) mergeMultipart(parts *CompleteMultipartUpload, uploadID string, fullObjectWriter *io.PipeWriter) {
+func (xl API) mergeMultipart(parts *CompleteMultipartUpload, uploadID string, fullObjectWriter *io.PipeWriter) {
 	for _, part := range parts.Part {
 		recvMD5 := part.ETag
-		object, ok := donut.multiPartObjects[uploadID].Get(part.PartNumber)
+		object, ok := xl.multiPartObjects[uploadID].Get(part.PartNumber)
 		if ok == false {
 			fullObjectWriter.CloseWithError(probe.WrapError(probe.NewError(InvalidPart{})))
 			return
@@ -289,25 +289,25 @@ func (donut API) mergeMultipart(parts *CompleteMultipartUpload, uploadID string,
 }
 
 // CompleteMultipartUpload - complete a multipart upload and persist the data
-func (donut API) CompleteMultipartUpload(bucket, key, uploadID string, data io.Reader, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
-	donut.lock.Lock()
-	defer donut.lock.Unlock()
-	size := int64(donut.multiPartObjects[uploadID].Stats().Bytes)
-	fullObjectReader, err := donut.completeMultipartUploadV2(bucket, key, uploadID, data, signature)
+func (xl API) CompleteMultipartUpload(bucket, key, uploadID string, data io.Reader, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
+	xl.lock.Lock()
+	defer xl.lock.Unlock()
+	size := int64(xl.multiPartObjects[uploadID].Stats().Bytes)
+	fullObjectReader, err := xl.completeMultipartUploadV2(bucket, key, uploadID, data, signature)
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
-	objectMetadata, err := donut.createObject(bucket, key, "", "", size, fullObjectReader, nil)
+	objectMetadata, err := xl.createObject(bucket, key, "", "", size, fullObjectReader, nil)
 	if err != nil {
 		// No need to call internal cleanup functions here, caller should call AbortMultipartUpload()
 		// which would in-turn cleanup properly in accordance with S3 Spec
 		return ObjectMetadata{}, err.Trace()
 	}
-	donut.cleanupMultipartSession(bucket, key, uploadID)
+	xl.cleanupMultipartSession(bucket, key, uploadID)
 	return objectMetadata, nil
 }
 
-func (donut API) completeMultipartUploadV2(bucket, key, uploadID string, data io.Reader, signature *signv4.Signature) (io.Reader, *probe.Error) {
+func (xl API) completeMultipartUploadV2(bucket, key, uploadID string, data io.Reader, signature *signv4.Signature) (io.Reader, *probe.Error) {
 	if !IsValidBucket(bucket) {
 		return nil, probe.NewError(BucketNameInvalid{Bucket: bucket})
 	}
@@ -315,18 +315,18 @@ func (donut API) completeMultipartUploadV2(bucket, key, uploadID string, data io
 		return nil, probe.NewError(ObjectNameInvalid{Object: key})
 	}
 
-	// TODO: multipart support for donut is broken, since we haven't finalized the format in which
+	// TODO: multipart support for xl is broken, since we haven't finalized the format in which
 	//       it can be stored, disabling this for now until we get the underlying layout stable.
 	//
-	//	if len(donut.config.NodeDiskMap) > 0 {
-	//		donut.lock.Unlock()
-	//		return donut.completeMultipartUpload(bucket, key, uploadID, data, signature)
+	//	if len(xl.config.NodeDiskMap) > 0 {
+	//		xl.lock.Unlock()
+	//		return xl.completeMultipartUpload(bucket, key, uploadID, data, signature)
 	//	}
 
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return nil, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	// Verify upload id
 	if storedBucket.multiPartSession[key].UploadID != uploadID {
 		return nil, probe.NewError(InvalidUploadID{UploadID: uploadID})
@@ -353,7 +353,7 @@ func (donut API) completeMultipartUploadV2(bucket, key, uploadID string, data io
 	}
 
 	fullObjectReader, fullObjectWriter := io.Pipe()
-	go donut.mergeMultipart(parts, uploadID, fullObjectWriter)
+	go xl.mergeMultipart(parts, uploadID, fullObjectWriter)
 
 	return fullObjectReader, nil
 }
@@ -366,27 +366,27 @@ func (a byKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 // ListMultipartUploads - list incomplete multipart sessions for a given bucket
-func (donut API) ListMultipartUploads(bucket string, resources BucketMultipartResourcesMetadata) (BucketMultipartResourcesMetadata, *probe.Error) {
+func (xl API) ListMultipartUploads(bucket string, resources BucketMultipartResourcesMetadata) (BucketMultipartResourcesMetadata, *probe.Error) {
 	// TODO handle delimiter, low priority
-	donut.lock.Lock()
-	defer donut.lock.Unlock()
+	xl.lock.Lock()
+	defer xl.lock.Unlock()
 
 	if !IsValidBucket(bucket) {
 		return BucketMultipartResourcesMetadata{}, probe.NewError(BucketNameInvalid{Bucket: bucket})
 	}
 
-	// TODO: multipart support for donut is broken, since we haven't finalized the format in which
+	// TODO: multipart support for xl is broken, since we haven't finalized the format in which
 	//       it can be stored, disabling this for now until we get the underlying layout stable.
 	//
-	//	if len(donut.config.NodeDiskMap) > 0 {
-	//		return donut.listMultipartUploads(bucket, resources)
+	//	if len(xl.config.NodeDiskMap) > 0 {
+	//		return xl.listMultipartUploads(bucket, resources)
 	//	}
 
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return BucketMultipartResourcesMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
 
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	var uploads []*UploadMetadata
 
 	for key, session := range storedBucket.multiPartSession {
@@ -441,10 +441,10 @@ func (a partNumber) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a partNumber) Less(i, j int) bool { return a[i].PartNumber < a[j].PartNumber }
 
 // ListObjectParts - list parts from incomplete multipart session for a given object
-func (donut API) ListObjectParts(bucket, key string, resources ObjectResourcesMetadata) (ObjectResourcesMetadata, *probe.Error) {
+func (xl API) ListObjectParts(bucket, key string, resources ObjectResourcesMetadata) (ObjectResourcesMetadata, *probe.Error) {
 	// Verify upload id
-	donut.lock.Lock()
-	defer donut.lock.Unlock()
+	xl.lock.Lock()
+	defer xl.lock.Unlock()
 
 	if !IsValidBucket(bucket) {
 		return ObjectResourcesMetadata{}, probe.NewError(BucketNameInvalid{Bucket: bucket})
@@ -453,17 +453,17 @@ func (donut API) ListObjectParts(bucket, key string, resources ObjectResourcesMe
 		return ObjectResourcesMetadata{}, probe.NewError(ObjectNameInvalid{Object: key})
 	}
 
-	// TODO: multipart support for donut is broken, since we haven't finalized the format in which
+	// TODO: multipart support for xl is broken, since we haven't finalized the format in which
 	//       it can be stored, disabling this for now until we get the underlying layout stable.
 	//
-	//	if len(donut.config.NodeDiskMap) > 0 {
-	//		return donut.listObjectParts(bucket, key, resources)
+	//	if len(xl.config.NodeDiskMap) > 0 {
+	//		return xl.listObjectParts(bucket, key, resources)
 	//	}
 
-	if !donut.storedBuckets.Exists(bucket) {
+	if !xl.storedBuckets.Exists(bucket) {
 		return ObjectResourcesMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	storedBucket := donut.storedBuckets.Get(bucket).(storedBucket)
+	storedBucket := xl.storedBuckets.Get(bucket).(storedBucket)
 	if _, ok := storedBucket.multiPartSession[key]; ok == false {
 		return ObjectResourcesMetadata{}, probe.NewError(ObjectNotFound{Object: key})
 	}
@@ -502,12 +502,12 @@ func (donut API) ListObjectParts(bucket, key string, resources ObjectResourcesMe
 }
 
 // evictedPart - call back function called by caching module during individual cache evictions
-func (donut API) evictedPart(a ...interface{}) {
+func (xl API) evictedPart(a ...interface{}) {
 	// loop through all buckets
-	buckets := donut.storedBuckets.GetAll()
+	buckets := xl.storedBuckets.GetAll()
 	for bucketName, bucket := range buckets {
 		b := bucket.(storedBucket)
-		donut.storedBuckets.Set(bucketName, b)
+		xl.storedBuckets.Set(bucketName, b)
 	}
 	debug.FreeOSMemory()
 }

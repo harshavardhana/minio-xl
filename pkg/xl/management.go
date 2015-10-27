@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
-	"github.com/minio/minio-xl/pkg/donut/disk"
 	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/xl/disk"
 )
 
-// Info - return info about donut configuration
-func (donut API) Info() (nodeDiskMap map[string][]string, err *probe.Error) {
+// Info - return info about xl configuration
+func (xl API) Info() (nodeDiskMap map[string][]string, err *probe.Error) {
 	nodeDiskMap = make(map[string][]string)
-	for nodeName, n := range donut.nodes {
+	for nodeName, n := range xl.nodes {
 		disks, err := n.ListDisks()
 		if err != nil {
 			return nil, err.Trace()
@@ -39,7 +39,7 @@ func (donut API) Info() (nodeDiskMap map[string][]string, err *probe.Error) {
 }
 
 // AttachNode - attach node
-func (donut API) AttachNode(hostname string, disks []string) *probe.Error {
+func (xl API) AttachNode(hostname string, disks []string) *probe.Error {
 	if hostname == "" || len(disks) == 0 {
 		return probe.NewError(InvalidArgument{})
 	}
@@ -47,13 +47,13 @@ func (donut API) AttachNode(hostname string, disks []string) *probe.Error {
 	if err != nil {
 		return err.Trace()
 	}
-	donut.nodes[hostname] = n
+	xl.nodes[hostname] = n
 	for i, d := range disks {
 		newDisk, err := disk.New(d)
 		if err != nil {
 			continue
 		}
-		if err := newDisk.MakeDir(donut.config.DonutName); err != nil {
+		if err := newDisk.MakeDir(xl.config.XLName); err != nil {
 			return err.Trace()
 		}
 		if err := n.AttachDisk(newDisk, i); err != nil {
@@ -64,18 +64,18 @@ func (donut API) AttachNode(hostname string, disks []string) *probe.Error {
 }
 
 // DetachNode - detach node
-func (donut API) DetachNode(hostname string) *probe.Error {
-	delete(donut.nodes, hostname)
+func (xl API) DetachNode(hostname string) *probe.Error {
+	delete(xl.nodes, hostname)
 	return nil
 }
 
-// Rebalance - rebalance an existing donut with new disks and nodes
-func (donut API) Rebalance() *probe.Error {
+// Rebalance - rebalance an existing xl with new disks and nodes
+func (xl API) Rebalance() *probe.Error {
 	return probe.NewError(APINotImplemented{API: "management.Rebalance"})
 }
 
-// Heal - heal your donuts
-func (donut API) Heal() *probe.Error {
+// Heal - heal your xls
+func (xl API) Heal() *probe.Error {
 	// TODO handle data heal
-	return donut.healBuckets()
+	return xl.healBuckets()
 }

@@ -32,7 +32,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/xl"
 	. "gopkg.in/check.v1"
 )
 
@@ -69,13 +69,13 @@ func (s *MyAPISignatureV4Suite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 	s.root = root
 
-	conf := &donut.Config{}
+	conf := &xl.Config{}
 	conf.Version = "0.0.1"
-	conf.DonutName = "test"
+	conf.XLName = "test"
 	conf.NodeDiskMap = createTestNodeDiskMap(root)
 	conf.MaxSize = 100000
-	donut.SetDonutConfigPath(filepath.Join(root, "donut.json"))
-	perr := donut.SaveConfig(conf)
+	xl.SetXLConfigPath(filepath.Join(root, "xl.json"))
+	perr := xl.SaveConfig(conf)
 	c.Assert(perr, IsNil)
 
 	accessKeyID, perr := generateAccessKeyID()
@@ -1012,8 +1012,8 @@ func (s *MyAPISignatureV4Suite) TestObjectMultipart(c *C) {
 	c.Assert(response2.StatusCode, Equals, http.StatusOK)
 
 	// complete multipart upload
-	completeUploads := &donut.CompleteMultipartUpload{
-		Part: []donut.CompletePart{
+	completeUploads := &xl.CompleteMultipartUpload{
+		Part: []xl.CompletePart{
 			{
 				PartNumber: 1,
 				ETag:       response1.Header.Get("ETag"),

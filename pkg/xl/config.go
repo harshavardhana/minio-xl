@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"os/user"
@@ -24,8 +24,8 @@ import (
 	"github.com/minio/minio-xl/pkg/quick"
 )
 
-// getDonutConfigPath get donut config file path
-func getDonutConfigPath() (string, *probe.Error) {
+// getXLConfigPath get xl config file path
+func getXLConfigPath() (string, *probe.Error) {
 	if customConfigPath != "" {
 		return customConfigPath, nil
 	}
@@ -33,21 +33,21 @@ func getDonutConfigPath() (string, *probe.Error) {
 	if err != nil {
 		return "", probe.NewError(err)
 	}
-	donutConfigPath := filepath.Join(u.HomeDir, ".minio", "donut.json")
-	return donutConfigPath, nil
+	xlConfigPath := filepath.Join(u.HomeDir, ".minio-xl", "xl.json")
+	return xlConfigPath, nil
 }
 
 // internal variable only accessed via get/set methods
 var customConfigPath string
 
-// SetDonutConfigPath - set custom donut config path
-func SetDonutConfigPath(configPath string) {
+// SetXLConfigPath - set custom xl config path
+func SetXLConfigPath(configPath string) {
 	customConfigPath = configPath
 }
 
-// SaveConfig save donut config
+// SaveConfig save xl config
 func SaveConfig(a *Config) *probe.Error {
-	donutConfigPath, err := getDonutConfigPath()
+	xlConfigPath, err := getXLConfigPath()
 	if err != nil {
 		return err.Trace()
 	}
@@ -55,15 +55,15 @@ func SaveConfig(a *Config) *probe.Error {
 	if err != nil {
 		return err.Trace()
 	}
-	if err := qc.Save(donutConfigPath); err != nil {
+	if err := qc.Save(xlConfigPath); err != nil {
 		return err.Trace()
 	}
 	return nil
 }
 
-// LoadConfig load donut config
+// LoadConfig load xl config
 func LoadConfig() (*Config, *probe.Error) {
-	donutConfigPath, err := getDonutConfigPath()
+	xlConfigPath, err := getXLConfigPath()
 	if err != nil {
 		return nil, err.Trace()
 	}
@@ -73,7 +73,7 @@ func LoadConfig() (*Config, *probe.Error) {
 	if err != nil {
 		return nil, err.Trace()
 	}
-	if err := qc.Load(donutConfigPath); err != nil {
+	if err := qc.Load(xlConfigPath); err != nil {
 		return nil, err.Trace()
 	}
 	return qc.Data().(*Config), nil

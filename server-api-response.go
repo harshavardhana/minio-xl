@@ -19,7 +19,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 // Reply date format
@@ -33,13 +33,13 @@ const (
 //
 // output:
 // populated struct that can be serialized to match xml and json api spec output
-func generateListBucketsResponse(buckets []donut.BucketMetadata) ListBucketsResponse {
+func generateListBucketsResponse(buckets []xl.BucketMetadata) ListBucketsResponse {
 	var listbuckets []*Bucket
 	var data = ListBucketsResponse{}
 	var owner = Owner{}
 
-	owner.ID = "minio"
-	owner.DisplayName = "minio"
+	owner.ID = "minio-xl"
+	owner.DisplayName = "minio-xl"
 
 	for _, bucket := range buckets {
 		var listbucket = &Bucket{}
@@ -55,34 +55,34 @@ func generateListBucketsResponse(buckets []donut.BucketMetadata) ListBucketsResp
 }
 
 // generates an AccessControlPolicy response for the said ACL.
-func generateAccessControlPolicyResponse(acl donut.BucketACL) AccessControlPolicyResponse {
+func generateAccessControlPolicyResponse(acl xl.BucketACL) AccessControlPolicyResponse {
 	accessCtrlPolicyResponse := AccessControlPolicyResponse{}
 	accessCtrlPolicyResponse.Owner = Owner{
-		ID:          "minio",
-		DisplayName: "minio",
+		ID:          "minio-xl",
+		DisplayName: "minio-xl",
 	}
 	defaultGrant := Grant{}
-	defaultGrant.Grantee.ID = "minio"
-	defaultGrant.Grantee.DisplayName = "minio"
+	defaultGrant.Grantee.ID = "minio-xl"
+	defaultGrant.Grantee.DisplayName = "minio-xl"
 	defaultGrant.Permission = "FULL_CONTROL"
 	accessCtrlPolicyResponse.AccessControlList.Grant = append(accessCtrlPolicyResponse.AccessControlList.Grant, defaultGrant)
 	switch {
 	case acl.IsPublicRead():
 		publicReadGrant := Grant{}
-		publicReadGrant.Grantee.ID = "minio"
-		publicReadGrant.Grantee.DisplayName = "minio"
+		publicReadGrant.Grantee.ID = "minio-xl"
+		publicReadGrant.Grantee.DisplayName = "minio-xl"
 		publicReadGrant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers"
 		publicReadGrant.Permission = "READ"
 		accessCtrlPolicyResponse.AccessControlList.Grant = append(accessCtrlPolicyResponse.AccessControlList.Grant, publicReadGrant)
 	case acl.IsPublicReadWrite():
 		publicReadGrant := Grant{}
-		publicReadGrant.Grantee.ID = "minio"
-		publicReadGrant.Grantee.DisplayName = "minio"
+		publicReadGrant.Grantee.ID = "minio-xl"
+		publicReadGrant.Grantee.DisplayName = "minio-xl"
 		publicReadGrant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers"
 		publicReadGrant.Permission = "READ"
 		publicReadWriteGrant := Grant{}
-		publicReadWriteGrant.Grantee.ID = "minio"
-		publicReadWriteGrant.Grantee.DisplayName = "minio"
+		publicReadWriteGrant.Grantee.ID = "minio-xl"
+		publicReadWriteGrant.Grantee.DisplayName = "minio-xl"
 		publicReadWriteGrant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers"
 		publicReadWriteGrant.Permission = "WRITE"
 		accessCtrlPolicyResponse.AccessControlList.Grant = append(accessCtrlPolicyResponse.AccessControlList.Grant, publicReadGrant)
@@ -92,14 +92,14 @@ func generateAccessControlPolicyResponse(acl donut.BucketACL) AccessControlPolic
 }
 
 // generates an ListObjects response for the said bucket with other enumerated options.
-func generateListObjectsResponse(bucket string, objects []donut.ObjectMetadata, bucketResources donut.BucketResourcesMetadata) ListObjectsResponse {
+func generateListObjectsResponse(bucket string, objects []xl.ObjectMetadata, bucketResources xl.BucketResourcesMetadata) ListObjectsResponse {
 	var contents []*Object
 	var prefixes []*CommonPrefix
 	var owner = Owner{}
 	var data = ListObjectsResponse{}
 
-	owner.ID = "minio"
-	owner.DisplayName = "minio"
+	owner.ID = "minio-xl"
+	owner.DisplayName = "minio-xl"
 
 	for _, object := range objects {
 		var content = &Object{}
@@ -152,17 +152,17 @@ func generateCompleteMultpartUploadResponse(bucket, key, location, etag string) 
 }
 
 // generateListPartsResult
-func generateListPartsResponse(objectMetadata donut.ObjectResourcesMetadata) ListPartsResponse {
+func generateListPartsResponse(objectMetadata xl.ObjectResourcesMetadata) ListPartsResponse {
 	// TODO - support EncodingType in xml decoding
 	listPartsResponse := ListPartsResponse{}
 	listPartsResponse.Bucket = objectMetadata.Bucket
 	listPartsResponse.Key = objectMetadata.Key
 	listPartsResponse.UploadID = objectMetadata.UploadID
 	listPartsResponse.StorageClass = "STANDARD"
-	listPartsResponse.Initiator.ID = "minio"
-	listPartsResponse.Initiator.DisplayName = "minio"
-	listPartsResponse.Owner.ID = "minio"
-	listPartsResponse.Owner.DisplayName = "minio"
+	listPartsResponse.Initiator.ID = "minio-xl"
+	listPartsResponse.Initiator.DisplayName = "minio-xl"
+	listPartsResponse.Owner.ID = "minio-xl"
+	listPartsResponse.Owner.DisplayName = "minio-xl"
 
 	listPartsResponse.MaxParts = objectMetadata.MaxParts
 	listPartsResponse.PartNumberMarker = objectMetadata.PartNumberMarker
@@ -182,7 +182,7 @@ func generateListPartsResponse(objectMetadata donut.ObjectResourcesMetadata) Lis
 }
 
 // generateListMultipartUploadsResponse
-func generateListMultipartUploadsResponse(bucket string, metadata donut.BucketMultipartResourcesMetadata) ListMultipartUploadsResponse {
+func generateListMultipartUploadsResponse(bucket string, metadata xl.BucketMultipartResourcesMetadata) ListMultipartUploadsResponse {
 	listMultipartUploadsResponse := ListMultipartUploadsResponse{}
 	listMultipartUploadsResponse.Bucket = bucket
 	listMultipartUploadsResponse.Delimiter = metadata.Delimiter

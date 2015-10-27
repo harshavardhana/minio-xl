@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"encoding/base64"
@@ -34,12 +34,12 @@ import (
 
 	"github.com/minio/minio-xl/pkg/crypto/sha256"
 	"github.com/minio/minio-xl/pkg/crypto/sha512"
-	"github.com/minio/minio-xl/pkg/donut/disk"
 	"github.com/minio/minio-xl/pkg/probe"
 	signv4 "github.com/minio/minio-xl/pkg/signature"
+	"github.com/minio/minio-xl/pkg/xl/disk"
 )
 
-// config files used inside Donut
+// config files used inside XL
 const (
 	// bucket, object metadata
 	bucketMetadataConfig = "bucketMetadata.json"
@@ -53,22 +53,22 @@ const (
 /// v1 API functions
 
 // makeBucket - make a new bucket
-func (donut API) makeBucket(bucket string, acl BucketACL) *probe.Error {
+func (xl API) makeBucket(bucket string, acl BucketACL) *probe.Error {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return probe.NewError(InvalidArgument{})
 	}
-	return donut.makeDonutBucket(bucket, acl.String())
+	return xl.makeXLBucket(bucket, acl.String())
 }
 
 // getBucketMetadata - get bucket metadata
-func (donut API) getBucketMetadata(bucketName string) (BucketMetadata, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) getBucketMetadata(bucketName string) (BucketMetadata, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return BucketMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucketName]; !ok {
+	if _, ok := xl.buckets[bucketName]; !ok {
 		return BucketMetadata{}, probe.NewError(BucketNotFound{Bucket: bucketName})
 	}
-	metadata, err := donut.getDonutBucketMetadata()
+	metadata, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return BucketMetadata{}, err.Trace()
 	}
@@ -76,11 +76,11 @@ func (donut API) getBucketMetadata(bucketName string) (BucketMetadata, *probe.Er
 }
 
 // setBucketMetadata - set bucket metadata
-func (donut API) setBucketMetadata(bucketName string, bucketMetadata map[string]string) *probe.Error {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) setBucketMetadata(bucketName string, bucketMetadata map[string]string) *probe.Error {
+	if err := xl.listXLBuckets(); err != nil {
 		return err.Trace()
 	}
-	metadata, err := donut.getDonutBucketMetadata()
+	metadata, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return err.Trace()
 	}
@@ -91,17 +91,17 @@ func (donut API) setBucketMetadata(bucketName string, bucketMetadata map[string]
 	}
 	oldBucketMetadata.ACL = BucketACL(acl)
 	metadata.Buckets[bucketName] = oldBucketMetadata
-	return donut.setDonutBucketMetadata(metadata)
+	return xl.setXLBucketMetadata(metadata)
 }
 
 // listBuckets - return list of buckets
-func (donut API) listBuckets() (map[string]BucketMetadata, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) listBuckets() (map[string]BucketMetadata, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return nil, err.Trace()
 	}
-	metadata, err := donut.getDonutBucketMetadata()
+	metadata, err := xl.getXLBucketMetadata()
 	if err != nil {
-		// intentionally left out the error when Donut is empty
+		// intentionally left out the error when XL is empty
 		// but we need to revisit this area in future - since we need
 		// to figure out between acceptable and unacceptable errors
 		return make(map[string]BucketMetadata), nil
@@ -113,14 +113,14 @@ func (donut API) listBuckets() (map[string]BucketMetadata, *probe.Error) {
 }
 
 // listObjects - return list of objects
-func (donut API) listObjects(bucket, prefix, marker, delimiter string, maxkeys int) (ListObjectsResults, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) listObjects(bucket, prefix, marker, delimiter string, maxkeys int) (ListObjectsResults, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return ListObjectsResults{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return ListObjectsResults{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	listObjects, err := donut.buckets[bucket].ListObjects(prefix, marker, delimiter, maxkeys)
+	listObjects, err := xl.buckets[bucket].ListObjects(prefix, marker, delimiter, maxkeys)
 	if err != nil {
 		return ListObjectsResults{}, err.Trace()
 	}
@@ -128,52 +128,52 @@ func (donut API) listObjects(bucket, prefix, marker, delimiter string, maxkeys i
 }
 
 // putObject - put object
-func (donut API) putObject(bucket, object, expectedMD5Sum string, reader io.Reader, size int64, metadata map[string]string, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
+func (xl API) putObject(bucket, object, expectedMD5Sum string, reader io.Reader, size int64, metadata map[string]string, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return ObjectMetadata{}, probe.NewError(InvalidArgument{})
 	}
 	if object == "" || strings.TrimSpace(object) == "" {
 		return ObjectMetadata{}, probe.NewError(InvalidArgument{})
 	}
-	if err := donut.listDonutBuckets(); err != nil {
+	if err := xl.listXLBuckets(); err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return ObjectMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	bucketMeta, err := donut.getDonutBucketMetadata()
+	bucketMeta, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
 	if _, ok := bucketMeta.Buckets[bucket].BucketObjects[object]; ok {
 		return ObjectMetadata{}, probe.NewError(ObjectExists{Object: object})
 	}
-	objMetadata, err := donut.buckets[bucket].WriteObject(object, reader, size, expectedMD5Sum, metadata, signature)
+	objMetadata, err := xl.buckets[bucket].WriteObject(object, reader, size, expectedMD5Sum, metadata, signature)
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
 	bucketMeta.Buckets[bucket].BucketObjects[object] = struct{}{}
-	if err := donut.setDonutBucketMetadata(bucketMeta); err != nil {
+	if err := xl.setXLBucketMetadata(bucketMeta); err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
 	return objMetadata, nil
 }
 
 // putObject - put object
-func (donut API) putObjectPart(bucket, object, expectedMD5Sum, uploadID string, partID int, reader io.Reader, size int64, metadata map[string]string, signature *signv4.Signature) (PartMetadata, *probe.Error) {
+func (xl API) putObjectPart(bucket, object, expectedMD5Sum, uploadID string, partID int, reader io.Reader, size int64, metadata map[string]string, signature *signv4.Signature) (PartMetadata, *probe.Error) {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return PartMetadata{}, probe.NewError(InvalidArgument{})
 	}
 	if object == "" || strings.TrimSpace(object) == "" {
 		return PartMetadata{}, probe.NewError(InvalidArgument{})
 	}
-	if err := donut.listDonutBuckets(); err != nil {
+	if err := xl.listXLBuckets(); err != nil {
 		return PartMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return PartMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	bucketMeta, err := donut.getDonutBucketMetadata()
+	bucketMeta, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return PartMetadata{}, err.Trace()
 	}
@@ -184,7 +184,7 @@ func (donut API) putObjectPart(bucket, object, expectedMD5Sum, uploadID string, 
 		return PartMetadata{}, probe.NewError(ObjectExists{Object: object})
 	}
 	objectPart := object + "/" + "multipart" + "/" + strconv.Itoa(partID)
-	objmetadata, err := donut.buckets[bucket].WriteObject(objectPart, reader, size, expectedMD5Sum, metadata, signature)
+	objmetadata, err := xl.buckets[bucket].WriteObject(objectPart, reader, size, expectedMD5Sum, metadata, signature)
 	if err != nil {
 		return PartMetadata{}, err.Trace()
 	}
@@ -197,45 +197,45 @@ func (donut API) putObjectPart(bucket, object, expectedMD5Sum, uploadID string, 
 	multipartSession := bucketMeta.Buckets[bucket].Multiparts[object]
 	multipartSession.Parts[strconv.Itoa(partID)] = partMetadata
 	bucketMeta.Buckets[bucket].Multiparts[object] = multipartSession
-	if err := donut.setDonutBucketMetadata(bucketMeta); err != nil {
+	if err := xl.setXLBucketMetadata(bucketMeta); err != nil {
 		return PartMetadata{}, err.Trace()
 	}
 	return partMetadata, nil
 }
 
 // getObject - get object
-func (donut API) getObject(bucket, object string) (reader io.ReadCloser, size int64, err *probe.Error) {
+func (xl API) getObject(bucket, object string) (reader io.ReadCloser, size int64, err *probe.Error) {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return nil, 0, probe.NewError(InvalidArgument{})
 	}
 	if object == "" || strings.TrimSpace(object) == "" {
 		return nil, 0, probe.NewError(InvalidArgument{})
 	}
-	if err := donut.listDonutBuckets(); err != nil {
+	if err := xl.listXLBuckets(); err != nil {
 		return nil, 0, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return nil, 0, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	return donut.buckets[bucket].ReadObject(object)
+	return xl.buckets[bucket].ReadObject(object)
 }
 
 // getObjectMetadata - get object metadata
-func (donut API) getObjectMetadata(bucket, object string) (ObjectMetadata, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) getObjectMetadata(bucket, object string) (ObjectMetadata, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return ObjectMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	bucketMeta, err := donut.getDonutBucketMetadata()
+	bucketMeta, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
 	if _, ok := bucketMeta.Buckets[bucket].BucketObjects[object]; !ok {
 		return ObjectMetadata{}, probe.NewError(ObjectNotFound{Object: object})
 	}
-	objectMetadata, err := donut.buckets[bucket].GetObjectMetadata(object)
+	objectMetadata, err := xl.buckets[bucket].GetObjectMetadata(object)
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
@@ -243,14 +243,14 @@ func (donut API) getObjectMetadata(bucket, object string) (ObjectMetadata, *prob
 }
 
 // newMultipartUpload - new multipart upload request
-func (donut API) newMultipartUpload(bucket, object, contentType string) (string, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) newMultipartUpload(bucket, object, contentType string) (string, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return "", err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return "", probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	allbuckets, err := donut.getDonutBucketMetadata()
+	allbuckets, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return "", err.Trace()
 	}
@@ -274,7 +274,7 @@ func (donut API) newMultipartUpload(bucket, object, contentType string) (string,
 	bucketMetadata.Multiparts = multiparts
 	allbuckets.Buckets[bucket] = bucketMetadata
 
-	if err := donut.setDonutBucketMetadata(allbuckets); err != nil {
+	if err := xl.setXLBucketMetadata(allbuckets); err != nil {
 		return "", err.Trace()
 	}
 
@@ -282,20 +282,20 @@ func (donut API) newMultipartUpload(bucket, object, contentType string) (string,
 }
 
 // listObjectParts list all object parts
-func (donut API) listObjectParts(bucket, object string, resources ObjectResourcesMetadata) (ObjectResourcesMetadata, *probe.Error) {
+func (xl API) listObjectParts(bucket, object string, resources ObjectResourcesMetadata) (ObjectResourcesMetadata, *probe.Error) {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return ObjectResourcesMetadata{}, probe.NewError(InvalidArgument{})
 	}
 	if object == "" || strings.TrimSpace(object) == "" {
 		return ObjectResourcesMetadata{}, probe.NewError(InvalidArgument{})
 	}
-	if err := donut.listDonutBuckets(); err != nil {
+	if err := xl.listXLBuckets(); err != nil {
 		return ObjectResourcesMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return ObjectResourcesMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	allBuckets, err := donut.getDonutBucketMetadata()
+	allBuckets, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return ObjectResourcesMetadata{}, err.Trace()
 	}
@@ -337,20 +337,20 @@ func (donut API) listObjectParts(bucket, object string, resources ObjectResource
 }
 
 // completeMultipartUpload complete an incomplete multipart upload
-func (donut API) completeMultipartUpload(bucket, object, uploadID string, data io.Reader, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
+func (xl API) completeMultipartUpload(bucket, object, uploadID string, data io.Reader, signature *signv4.Signature) (ObjectMetadata, *probe.Error) {
 	if bucket == "" || strings.TrimSpace(bucket) == "" {
 		return ObjectMetadata{}, probe.NewError(InvalidArgument{})
 	}
 	if object == "" || strings.TrimSpace(object) == "" {
 		return ObjectMetadata{}, probe.NewError(InvalidArgument{})
 	}
-	if err := donut.listDonutBuckets(); err != nil {
+	if err := xl.listXLBuckets(); err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return ObjectMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	allBuckets, err := donut.getDonutBucketMetadata()
+	allBuckets, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return ObjectMetadata{}, err.Trace()
 	}
@@ -412,14 +412,14 @@ func (donut API) completeMultipartUpload(bucket, object, uploadID string, data i
 }
 
 // listMultipartUploads list all multipart uploads
-func (donut API) listMultipartUploads(bucket string, resources BucketMultipartResourcesMetadata) (BucketMultipartResourcesMetadata, *probe.Error) {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) listMultipartUploads(bucket string, resources BucketMultipartResourcesMetadata) (BucketMultipartResourcesMetadata, *probe.Error) {
+	if err := xl.listXLBuckets(); err != nil {
 		return BucketMultipartResourcesMetadata{}, err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return BucketMultipartResourcesMetadata{}, probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	allbuckets, err := donut.getDonutBucketMetadata()
+	allbuckets, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return BucketMultipartResourcesMetadata{}, err.Trace()
 	}
@@ -470,14 +470,14 @@ func (donut API) listMultipartUploads(bucket string, resources BucketMultipartRe
 }
 
 // abortMultipartUpload - abort a incomplete multipart upload
-func (donut API) abortMultipartUpload(bucket, object, uploadID string) *probe.Error {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) abortMultipartUpload(bucket, object, uploadID string) *probe.Error {
+	if err := xl.listXLBuckets(); err != nil {
 		return err.Trace()
 	}
-	if _, ok := donut.buckets[bucket]; !ok {
+	if _, ok := xl.buckets[bucket]; !ok {
 		return probe.NewError(BucketNotFound{Bucket: bucket})
 	}
-	allbuckets, err := donut.getDonutBucketMetadata()
+	allbuckets, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return err.Trace()
 	}
@@ -491,7 +491,7 @@ func (donut API) abortMultipartUpload(bucket, object, uploadID string) *probe.Er
 	delete(bucketMetadata.Multiparts, object)
 
 	allbuckets.Buckets[bucket] = bucketMetadata
-	if err := donut.setDonutBucketMetadata(allbuckets); err != nil {
+	if err := xl.setXLBucketMetadata(allbuckets); err != nil {
 		return err.Trace()
 	}
 
@@ -501,16 +501,16 @@ func (donut API) abortMultipartUpload(bucket, object, uploadID string) *probe.Er
 //// internal functions
 
 // getBucketMetadataWriters -
-func (donut API) getBucketMetadataWriters() ([]io.WriteCloser, *probe.Error) {
+func (xl API) getBucketMetadataWriters() ([]io.WriteCloser, *probe.Error) {
 	var writers []io.WriteCloser
-	for _, node := range donut.nodes {
+	for _, node := range xl.nodes {
 		disks, err := node.ListDisks()
 		if err != nil {
 			return nil, err.Trace()
 		}
 		writers = make([]io.WriteCloser, len(disks))
 		for order, disk := range disks {
-			bucketMetaDataWriter, err := disk.CreateFile(filepath.Join(donut.config.DonutName, bucketMetadataConfig))
+			bucketMetaDataWriter, err := disk.CreateFile(filepath.Join(xl.config.XLName, bucketMetadataConfig))
 			if err != nil {
 				return nil, err.Trace()
 			}
@@ -521,11 +521,11 @@ func (donut API) getBucketMetadataWriters() ([]io.WriteCloser, *probe.Error) {
 }
 
 // getBucketMetadataReaders - readers are returned in map rather than slice
-func (donut API) getBucketMetadataReaders() (map[int]io.ReadCloser, *probe.Error) {
+func (xl API) getBucketMetadataReaders() (map[int]io.ReadCloser, *probe.Error) {
 	readers := make(map[int]io.ReadCloser)
 	disks := make(map[int]disk.Disk)
 	var err *probe.Error
-	for _, node := range donut.nodes {
+	for _, node := range xl.nodes {
 		nDisks := make(map[int]disk.Disk)
 		nDisks, err = node.ListDisks()
 		if err != nil {
@@ -537,7 +537,7 @@ func (donut API) getBucketMetadataReaders() (map[int]io.ReadCloser, *probe.Error
 	}
 	var bucketMetaDataReader io.ReadCloser
 	for order, disk := range disks {
-		bucketMetaDataReader, err = disk.Open(filepath.Join(donut.config.DonutName, bucketMetadataConfig))
+		bucketMetaDataReader, err = disk.Open(filepath.Join(xl.config.XLName, bucketMetadataConfig))
 		if err != nil {
 			continue
 		}
@@ -549,9 +549,9 @@ func (donut API) getBucketMetadataReaders() (map[int]io.ReadCloser, *probe.Error
 	return readers, nil
 }
 
-// setDonutBucketMetadata -
-func (donut API) setDonutBucketMetadata(metadata *AllBuckets) *probe.Error {
-	writers, err := donut.getBucketMetadataWriters()
+// setXLBucketMetadata -
+func (xl API) setXLBucketMetadata(metadata *AllBuckets) *probe.Error {
+	writers, err := xl.getBucketMetadataWriters()
 	if err != nil {
 		return err.Trace()
 	}
@@ -568,10 +568,10 @@ func (donut API) setDonutBucketMetadata(metadata *AllBuckets) *probe.Error {
 	return nil
 }
 
-// getDonutBucketMetadata -
-func (donut API) getDonutBucketMetadata() (*AllBuckets, *probe.Error) {
+// getXLBucketMetadata -
+func (xl API) getXLBucketMetadata() (*AllBuckets, *probe.Error) {
 	metadata := &AllBuckets{}
-	readers, err := donut.getBucketMetadataReaders()
+	readers, err := xl.getBucketMetadataReaders()
 	if err != nil {
 		return nil, err.Trace()
 	}
@@ -590,21 +590,21 @@ func (donut API) getDonutBucketMetadata() (*AllBuckets, *probe.Error) {
 	}
 }
 
-// makeDonutBucket -
-func (donut API) makeDonutBucket(bucketName, acl string) *probe.Error {
-	if err := donut.listDonutBuckets(); err != nil {
+// makeXLBucket -
+func (xl API) makeXLBucket(bucketName, acl string) *probe.Error {
+	if err := xl.listXLBuckets(); err != nil {
 		return err.Trace()
 	}
-	if _, ok := donut.buckets[bucketName]; ok {
+	if _, ok := xl.buckets[bucketName]; ok {
 		return probe.NewError(BucketExists{Bucket: bucketName})
 	}
-	bkt, bucketMetadata, err := newBucket(bucketName, acl, donut.config.DonutName, donut.nodes)
+	bkt, bucketMetadata, err := newBucket(bucketName, acl, xl.config.XLName, xl.nodes)
 	if err != nil {
 		return err.Trace()
 	}
 	nodeNumber := 0
-	donut.buckets[bucketName] = bkt
-	for _, node := range donut.nodes {
+	xl.buckets[bucketName] = bkt
+	for _, node := range xl.nodes {
 		disks := make(map[int]disk.Disk)
 		disks, err = node.ListDisks()
 		if err != nil {
@@ -612,7 +612,7 @@ func (donut API) makeDonutBucket(bucketName, acl string) *probe.Error {
 		}
 		for order, disk := range disks {
 			bucketSlice := fmt.Sprintf("%s$%d$%d", bucketName, nodeNumber, order)
-			err := disk.MakeDir(filepath.Join(donut.config.DonutName, bucketSlice))
+			err := disk.MakeDir(filepath.Join(xl.config.XLName, bucketSlice))
 			if err != nil {
 				return err.Trace()
 			}
@@ -620,13 +620,13 @@ func (donut API) makeDonutBucket(bucketName, acl string) *probe.Error {
 		nodeNumber = nodeNumber + 1
 	}
 	var metadata *AllBuckets
-	metadata, err = donut.getDonutBucketMetadata()
+	metadata, err = xl.getXLBucketMetadata()
 	if err != nil {
 		if os.IsNotExist(err.ToGoError()) {
 			metadata = new(AllBuckets)
 			metadata.Buckets = make(map[string]BucketMetadata)
 			metadata.Buckets[bucketName] = bucketMetadata
-			err = donut.setDonutBucketMetadata(metadata)
+			err = xl.setXLBucketMetadata(metadata)
 			if err != nil {
 				return err.Trace()
 			}
@@ -635,18 +635,18 @@ func (donut API) makeDonutBucket(bucketName, acl string) *probe.Error {
 		return err.Trace()
 	}
 	metadata.Buckets[bucketName] = bucketMetadata
-	err = donut.setDonutBucketMetadata(metadata)
+	err = xl.setXLBucketMetadata(metadata)
 	if err != nil {
 		return err.Trace()
 	}
 	return nil
 }
 
-// listDonutBuckets -
-func (donut API) listDonutBuckets() *probe.Error {
+// listXLBuckets -
+func (xl API) listXLBuckets() *probe.Error {
 	var disks map[int]disk.Disk
 	var err *probe.Error
-	for _, node := range donut.nodes {
+	for _, node := range xl.nodes {
 		disks, err = node.ListDisks()
 		if err != nil {
 			return err.Trace()
@@ -654,7 +654,7 @@ func (donut API) listDonutBuckets() *probe.Error {
 	}
 	var dirs []os.FileInfo
 	for _, disk := range disks {
-		dirs, err = disk.ListDir(donut.config.DonutName)
+		dirs, err = disk.ListDir(xl.config.XLName)
 		if err == nil {
 			break
 		}
@@ -669,12 +669,12 @@ func (donut API) listDonutBuckets() *probe.Error {
 			return probe.NewError(CorruptedBackend{Backend: dir.Name()})
 		}
 		bucketName := splitDir[0]
-		// we dont need this once we cache from makeDonutBucket()
-		bkt, _, err := newBucket(bucketName, "private", donut.config.DonutName, donut.nodes)
+		// we dont need this once we cache from makeXLBucket()
+		bkt, _, err := newBucket(bucketName, "private", xl.config.XLName, xl.nodes)
 		if err != nil {
 			return err.Trace()
 		}
-		donut.buckets[bucketName] = bkt
+		xl.buckets[bucketName] = bkt
 	}
 	return nil
 }
