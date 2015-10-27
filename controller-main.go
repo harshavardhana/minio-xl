@@ -35,17 +35,17 @@ var controllerCmd = cli.Command{
 	Usage:  "Start minio controller",
 	Action: controllerMain,
 	CustomHelpTemplate: `NAME:
-  minio {{.Name}} - {{.Description}}
+  minio-xl {{.Name}} - {{.Description}}
 
 USAGE:
-  minio {{.Name}} [OPTION]
+  minio-xl {{.Name}} [OPTION]
 
 EXAMPLES:
   1. Start minio controller
-      $ minio {{.Name}}
+      $ minio-xl {{.Name}}
 
   2. Fetch stored access keys
-      $ minio {{.Name}} keys
+      $ minio-xl {{.Name}} keys
 `,
 }
 
@@ -179,7 +179,7 @@ func firstTimeAuth() *probe.Error {
 
 		}
 		Println("To fetch your keys again.")
-		Println("  $ minio controller keys")
+		Println("  $ minio-xl controller keys")
 	}
 	return nil
 }

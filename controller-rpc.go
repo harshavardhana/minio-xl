@@ -198,7 +198,7 @@ func proxyRequest(method, host string, ssl bool, res interface{}) *probe.Error {
 
 // StorageStats returns dummy storage stats
 func (s *controllerRPCService) StorageStats(r *http.Request, args *ControllerArgs, reply *StorageStatsRep) error {
-	err := proxyRequest("Donut.StorageStats", args.Host, args.SSL, reply)
+	err := proxyRequest("XL.StorageStats", args.Host, args.SSL, reply)
 	if err != nil {
 		return probe.WrapError(err)
 	}
@@ -207,7 +207,7 @@ func (s *controllerRPCService) StorageStats(r *http.Request, args *ControllerArg
 
 // RebalaceStats returns dummy rebalance stats
 func (s *controllerRPCService) RebalanceStats(r *http.Request, args *ControllerArgs, reply *RebalanceStatsRep) error {
-	err := proxyRequest("Donut.RebalanceStats", args.Host, args.SSL, reply)
+	err := proxyRequest("XL.RebalanceStats", args.Host, args.SSL, reply)
 	if err != nil {
 		return probe.WrapError(err)
 	}
@@ -293,7 +293,7 @@ func (s *controllerRPCService) GetServerVersion(r *http.Request, args *Controlle
 
 func (s *controllerRPCService) GetVersion(r *http.Request, args *ControllerArgs, res *VersionRep) error {
 	res.Version = "0.0.1"
-	res.BuildDate = minioVersion
+	res.BuildDate = minioXLVersion
 	res.Architecture = runtime.GOARCH
 	res.OperatingSystem = runtime.GOOS
 	return nil

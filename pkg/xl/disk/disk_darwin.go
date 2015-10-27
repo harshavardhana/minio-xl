@@ -18,7 +18,7 @@ package disk
 
 import "strconv"
 
-// fsType2StrinMap - list of filesystems supported by donut
+// fsType2StrinMap - list of filesystems supported by xl
 var fsType2StringMap = map[string]string{
 	"11": "HFS",
 }

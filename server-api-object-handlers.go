@@ -9,7 +9,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implieapi.Donut.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implieapi.XL.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -21,9 +21,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/minio/minio-xl/pkg/donut"
 	"github.com/minio/minio-xl/pkg/probe"
 	signv4 "github.com/minio/minio-xl/pkg/signature"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 const (
@@ -49,17 +49,17 @@ func (api API) GetObjectHandler(w http.ResponseWriter, req *http.Request) {
 	bucket = vars["bucket"]
 	object = vars["object"]
 
-	metadata, err := api.Donut.GetObjectMetadata(bucket, object)
+	metadata, err := api.XL.GetObjectMetadata(bucket, object)
 	if err != nil {
 		errorIf(err.Trace(), "GetObject failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.ObjectNotFound:
+		case xl.ObjectNotFound:
 			writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
-		case donut.ObjectNameInvalid:
+		case xl.ObjectNameInvalid:
 			writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -73,7 +73,7 @@ func (api API) GetObjectHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	setObjectHeaders(w, metadata, hrange)
-	if _, err = api.Donut.GetObject(w, bucket, object, hrange.start, hrange.length); err != nil {
+	if _, err = api.XL.GetObject(w, bucket, object, hrange.start, hrange.length); err != nil {
 		errorIf(err.Trace(), "GetObject failed.", nil)
 		return
 	}
@@ -97,17 +97,17 @@ func (api API) HeadObjectHandler(w http.ResponseWriter, req *http.Request) {
 	bucket = vars["bucket"]
 	object = vars["object"]
 
-	metadata, err := api.Donut.GetObjectMetadata(bucket, object)
+	metadata, err := api.XL.GetObjectMetadata(bucket, object)
 	if err != nil {
 		errorIf(err.Trace(), "GetObjectMetadata failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.ObjectNotFound:
+		case xl.ObjectNotFound:
 			writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
-		case donut.ObjectNameInvalid:
+		case xl.ObjectNameInvalid:
 			writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -187,27 +187,27 @@ func (api API) PutObjectHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	metadata, err := api.Donut.CreateObject(bucket, object, md5, sizeInt64, req.Body, nil, signature)
+	metadata, err := api.XL.CreateObject(bucket, object, md5, sizeInt64, req.Body, nil, signature)
 	if err != nil {
 		errorIf(err.Trace(), "CreateObject failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.ObjectExists:
+		case xl.ObjectExists:
 			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
-		case donut.BadDigest:
+		case xl.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.MissingDateHeader:
 			writeErrorResponse(w, req, RequestTimeTooSkewed, req.URL.Path)
 		case signv4.DoesNotMatch:
 			writeErrorResponse(w, req, SignatureDoesNotMatch, req.URL.Path)
-		case donut.IncompleteBody:
+		case xl.IncompleteBody:
 			writeErrorResponse(w, req, IncompleteBody, req.URL.Path)
-		case donut.EntityTooLarge:
+		case xl.EntityTooLarge:
 			writeErrorResponse(w, req, EntityTooLarge, req.URL.Path)
-		case donut.InvalidDigest:
+		case xl.InvalidDigest:
 			writeErrorResponse(w, req, InvalidDigest, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -236,11 +236,11 @@ func (api API) NewMultipartUploadHandler(w http.ResponseWriter, req *http.Reques
 	bucket = vars["bucket"]
 	object = vars["object"]
 
-	uploadID, err := api.Donut.NewMultipartUpload(bucket, object, req.Header.Get("Content-Type"))
+	uploadID, err := api.XL.NewMultipartUpload(bucket, object, req.Header.Get("Content-Type"))
 	if err != nil {
 		errorIf(err.Trace(), "NewMultipartUpload failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.ObjectExists:
+		case xl.ObjectExists:
 			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -328,23 +328,23 @@ func (api API) PutObjectPartHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	calculatedMD5, err := api.Donut.CreateObjectPart(bucket, object, uploadID, partID, "", md5, sizeInt64, req.Body, signature)
+	calculatedMD5, err := api.XL.CreateObjectPart(bucket, object, uploadID, partID, "", md5, sizeInt64, req.Body, signature)
 	if err != nil {
 		errorIf(err.Trace(), "CreateObjectPart failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.InvalidUploadID:
+		case xl.InvalidUploadID:
 			writeErrorResponse(w, req, NoSuchUpload, req.URL.Path)
-		case donut.ObjectExists:
+		case xl.ObjectExists:
 			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
-		case donut.BadDigest:
+		case xl.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.DoesNotMatch:
 			writeErrorResponse(w, req, SignatureDoesNotMatch, req.URL.Path)
-		case donut.IncompleteBody:
+		case xl.IncompleteBody:
 			writeErrorResponse(w, req, IncompleteBody, req.URL.Path)
-		case donut.EntityTooLarge:
+		case xl.EntityTooLarge:
 			writeErrorResponse(w, req, EntityTooLarge, req.URL.Path)
-		case donut.InvalidDigest:
+		case xl.InvalidDigest:
 			writeErrorResponse(w, req, InvalidDigest, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -372,11 +372,11 @@ func (api API) AbortMultipartUploadHandler(w http.ResponseWriter, req *http.Requ
 
 	objectResourcesMetadata := getObjectResources(req.URL.Query())
 
-	err := api.Donut.AbortMultipartUpload(bucket, object, objectResourcesMetadata.UploadID)
+	err := api.XL.AbortMultipartUpload(bucket, object, objectResourcesMetadata.UploadID)
 	if err != nil {
 		errorIf(err.Trace(), "AbortMutlipartUpload failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.InvalidUploadID:
+		case xl.InvalidUploadID:
 			writeErrorResponse(w, req, NoSuchUpload, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -415,11 +415,11 @@ func (api API) ListObjectPartsHandler(w http.ResponseWriter, req *http.Request) 
 	bucket := vars["bucket"]
 	object := vars["object"]
 
-	objectResourcesMetadata, err := api.Donut.ListObjectParts(bucket, object, objectResourcesMetadata)
+	objectResourcesMetadata, err := api.XL.ListObjectParts(bucket, object, objectResourcesMetadata)
 	if err != nil {
 		errorIf(err.Trace(), "ListObjectParts failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.InvalidUploadID:
+		case xl.InvalidUploadID:
 			writeErrorResponse(w, req, NoSuchUpload, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -465,23 +465,23 @@ func (api API) CompleteMultipartUploadHandler(w http.ResponseWriter, req *http.R
 		}
 	}
 
-	metadata, err := api.Donut.CompleteMultipartUpload(bucket, object, objectResourcesMetadata.UploadID, req.Body, signature)
+	metadata, err := api.XL.CompleteMultipartUpload(bucket, object, objectResourcesMetadata.UploadID, req.Body, signature)
 	if err != nil {
 		errorIf(err.Trace(), "CompleteMultipartUpload failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.InvalidUploadID:
+		case xl.InvalidUploadID:
 			writeErrorResponse(w, req, NoSuchUpload, req.URL.Path)
-		case donut.InvalidPart:
+		case xl.InvalidPart:
 			writeErrorResponse(w, req, InvalidPart, req.URL.Path)
-		case donut.InvalidPartOrder:
+		case xl.InvalidPartOrder:
 			writeErrorResponse(w, req, InvalidPartOrder, req.URL.Path)
 		case signv4.MissingDateHeader:
 			writeErrorResponse(w, req, RequestTimeTooSkewed, req.URL.Path)
 		case signv4.DoesNotMatch:
 			writeErrorResponse(w, req, SignatureDoesNotMatch, req.URL.Path)
-		case donut.IncompleteBody:
+		case xl.IncompleteBody:
 			writeErrorResponse(w, req, IncompleteBody, req.URL.Path)
-		case donut.MalformedXML:
+		case xl.MalformedXML:
 			writeErrorResponse(w, req, MalformedXML, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)

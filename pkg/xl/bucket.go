@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"bytes"
@@ -33,9 +33,9 @@ import (
 
 	"github.com/minio/minio-xl/pkg/crypto/sha256"
 	"github.com/minio/minio-xl/pkg/crypto/sha512"
-	"github.com/minio/minio-xl/pkg/donut/disk"
 	"github.com/minio/minio-xl/pkg/probe"
 	signv4 "github.com/minio/minio-xl/pkg/signature"
+	"github.com/minio/minio-xl/pkg/xl/disk"
 )
 
 const (
@@ -44,17 +44,17 @@ const (
 
 // internal struct carrying bucket specific information
 type bucket struct {
-	name      string
-	acl       string
-	time      time.Time
-	donutName string
-	nodes     map[string]node
-	lock      *sync.Mutex
+	name   string
+	acl    string
+	time   time.Time
+	xlName string
+	nodes  map[string]node
+	lock   *sync.Mutex
 }
 
 // newBucket - instantiate a new bucket
-func newBucket(bucketName, aclType, donutName string, nodes map[string]node) (bucket, BucketMetadata, *probe.Error) {
-	if strings.TrimSpace(bucketName) == "" || strings.TrimSpace(donutName) == "" {
+func newBucket(bucketName, aclType, xlName string, nodes map[string]node) (bucket, BucketMetadata, *probe.Error) {
+	if strings.TrimSpace(bucketName) == "" || strings.TrimSpace(xlName) == "" {
 		return bucket{}, BucketMetadata{}, probe.NewError(InvalidArgument{})
 	}
 
@@ -63,7 +63,7 @@ func newBucket(bucketName, aclType, donutName string, nodes map[string]node) (bu
 	b.name = bucketName
 	b.acl = aclType
 	b.time = t
-	b.donutName = donutName
+	b.xlName = xlName
 	b.nodes = nodes
 	b.lock = new(sync.Mutex)
 
@@ -96,7 +96,7 @@ func (b bucket) getBucketMetadataReaders() (map[int]io.ReadCloser, *probe.Error)
 	}
 	var bucketMetaDataReader io.ReadCloser
 	for order, disk := range disks {
-		bucketMetaDataReader, err = disk.Open(filepath.Join(b.donutName, bucketMetadataConfig))
+		bucketMetaDataReader, err = disk.Open(filepath.Join(b.xlName, bucketMetadataConfig))
 		if err != nil {
 			continue
 		}
@@ -283,7 +283,7 @@ func (b bucket) WriteObject(objectName string, objectData io.Reader, size int64,
 			CleanupWritersOnError(writers)
 			return ObjectMetadata{}, err.Trace()
 		}
-		/// donutMetadata section
+		/// xlMetadata section
 		objMetadata.BlockSize = blockSize
 		objMetadata.ChunkCount = chunkCount
 		objMetadata.DataDisks = k
@@ -405,7 +405,7 @@ func (b bucket) readObjectMetadata(objectName string) (ObjectMetadata, *probe.Er
 //
 // example:
 // user provided value - "this/is/my/deep/directory/structure"
-// donut normalized value - "this-is-my-deep-directory-structure"
+// xl normalized value - "this-is-my-deep-directory-structure"
 //
 func normalizeObjectName(objectName string) string {
 	// replace every '/' with '-'
@@ -600,7 +600,7 @@ func (b bucket) getObjectReaders(objectName, objectMeta string) (map[int]io.Read
 		for order, disk := range disks {
 			var objectSlice io.ReadCloser
 			bucketSlice := fmt.Sprintf("%s$%d$%d", b.name, nodeSlice, order)
-			objectPath := filepath.Join(b.donutName, bucketSlice, objectName, objectMeta)
+			objectPath := filepath.Join(b.xlName, bucketSlice, objectName, objectMeta)
 			objectSlice, err = disk.Open(objectPath)
 			if err == nil {
 				readers[order] = objectSlice
@@ -626,7 +626,7 @@ func (b bucket) getObjectWriters(objectName, objectMeta string) ([]io.WriteClose
 		writers = make([]io.WriteCloser, len(disks))
 		for order, disk := range disks {
 			bucketSlice := fmt.Sprintf("%s$%d$%d", b.name, nodeSlice, order)
-			objectPath := filepath.Join(b.donutName, bucketSlice, objectName, objectMeta)
+			objectPath := filepath.Join(b.xlName, bucketSlice, objectName, objectMeta)
 			objectSlice, err := disk.CreateFile(objectPath)
 			if err != nil {
 				return nil, err.Trace()

@@ -34,13 +34,13 @@ var constantsTemplate = `// --------  DO NOT EDIT --------
 package main
 
 const (
-	minioVersion    = {{if .Version}}"{{.Version}}"{{else}}""{{end}}
-	minioReleaseTag = {{if .ReleaseTag}}"{{.ReleaseTag}}"{{else}}""{{end}}
-	minioCommitID   = {{if .CommitID}}"{{.CommitID}}"{{else}}""{{end}}
+	minioXLVersion    = {{if .Version}}"{{.Version}}"{{else}}""{{end}}
+	minioXLReleaseTag = {{if .ReleaseTag}}"{{.ReleaseTag}}"{{else}}""{{end}}
+	minioXLCommitID   = {{if .CommitID}}"{{.CommitID}}"{{else}}""{{end}}
 )
 
 var (
-	minioShortCommitID = minioCommitID[:12]
+	minioXLShortCommitID = minioXLCommitID[:12]
 )
 `
 

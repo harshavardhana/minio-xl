@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	encoding "github.com/minio/minio-xl/pkg/erasure"

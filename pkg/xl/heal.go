@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
 
-	"github.com/minio/minio-xl/pkg/donut/disk"
 	"github.com/minio/minio-xl/pkg/probe"
+	"github.com/minio/minio-xl/pkg/xl/disk"
 )
 
 // healBuckets heal bucket slices
-func (donut API) healBuckets() *probe.Error {
-	if err := donut.listDonutBuckets(); err != nil {
+func (xl API) healBuckets() *probe.Error {
+	if err := xl.listXLBuckets(); err != nil {
 		return err.Trace()
 	}
-	bucketMetadata, err := donut.getDonutBucketMetadata()
+	bucketMetadata, err := xl.getXLBucketMetadata()
 	if err != nil {
 		return err.Trace()
 	}
 	disks := make(map[int]disk.Disk)
-	for _, node := range donut.nodes {
+	for _, node := range xl.nodes {
 		nDisks, err := node.ListDisks()
 		if err != nil {
 			return err.Trace()
@@ -46,8 +46,8 @@ func (donut API) healBuckets() *probe.Error {
 	}
 	for order, disk := range disks {
 		if disk.IsUsable() {
-			disk.MakeDir(donut.config.DonutName)
-			bucketMetadataWriter, err := disk.CreateFile(filepath.Join(donut.config.DonutName, bucketMetadataConfig))
+			disk.MakeDir(xl.config.XLName)
+			bucketMetadataWriter, err := disk.CreateFile(filepath.Join(xl.config.XLName, bucketMetadataConfig))
 			if err != nil {
 				return err.Trace()
 			}
@@ -58,7 +58,7 @@ func (donut API) healBuckets() *probe.Error {
 			}
 			for bucket := range bucketMetadata.Buckets {
 				bucketSlice := fmt.Sprintf("%s$0$%d", bucket, order) // TODO handle node slices
-				err := disk.MakeDir(filepath.Join(donut.config.DonutName, bucketSlice))
+				err := disk.MakeDir(filepath.Join(xl.config.XLName, bucketSlice))
 				if err != nil {
 					return err.Trace()
 				}

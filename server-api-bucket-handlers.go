@@ -20,9 +20,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/minio/minio-xl/pkg/donut"
 	"github.com/minio/minio-xl/pkg/probe"
 	signv4 "github.com/minio/minio-xl/pkg/signature"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 // ListMultipartUploadsHandler - GET Bucket (List Multipart uploads)
@@ -54,11 +54,11 @@ func (api API) ListMultipartUploadsHandler(w http.ResponseWriter, req *http.Requ
 	vars := mux.Vars(req)
 	bucket := vars["bucket"]
 
-	resources, err := api.Donut.ListMultipartUploads(bucket, resources)
+	resources, err := api.XL.ListMultipartUploads(bucket, resources)
 	if err != nil {
 		errorIf(err.Trace(), "ListMultipartUploads failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -102,7 +102,7 @@ func (api API) ListObjectsHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	bucket := vars["bucket"]
 
-	objects, resources, err := api.Donut.ListObjects(bucket, resources)
+	objects, resources, err := api.XL.ListObjects(bucket, resources)
 	if err == nil {
 		// generate response
 		response := generateListObjectsResponse(bucket, objects, resources)
@@ -114,13 +114,13 @@ func (api API) ListObjectsHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	switch err.ToGoError().(type) {
-	case donut.BucketNameInvalid:
+	case xl.BucketNameInvalid:
 		writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-	case donut.BucketNotFound:
+	case xl.BucketNotFound:
 		writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-	case donut.ObjectNotFound:
+	case xl.ObjectNotFound:
 		writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
-	case donut.ObjectNameInvalid:
+	case xl.ObjectNameInvalid:
 		writeErrorResponse(w, req, NoSuchKey, req.URL.Path)
 	default:
 		errorIf(err.Trace(), "ListObjects failed.", nil)
@@ -149,7 +149,7 @@ func (api API) ListBucketsHandler(w http.ResponseWriter, req *http.Request) {
 	//	return
 	// }
 
-	buckets, err := api.Donut.ListBuckets()
+	buckets, err := api.XL.ListBuckets()
 	if err == nil {
 		// generate response
 		response := generateListBucketsResponse(buckets)
@@ -216,17 +216,17 @@ func (api API) PutBucketHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	err := api.Donut.MakeBucket(bucket, getACLTypeString(aclType), req.Body, signature)
+	err := api.XL.MakeBucket(bucket, getACLTypeString(aclType), req.Body, signature)
 	if err != nil {
 		errorIf(err.Trace(), "MakeBucket failed.", nil)
 		switch err.ToGoError().(type) {
 		case signv4.DoesNotMatch:
 			writeErrorResponse(w, req, SignatureDoesNotMatch, req.URL.Path)
-		case donut.TooManyBuckets:
+		case xl.TooManyBuckets:
 			writeErrorResponse(w, req, TooManyBuckets, req.URL.Path)
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.BucketExists:
+		case xl.BucketExists:
 			writeErrorResponse(w, req, BucketAlreadyExists, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -302,25 +302,25 @@ func (api API) PostPolicyBucketHandler(w http.ResponseWriter, req *http.Request)
 		writeErrorResponse(w, req, MalformedPOSTRequest, req.URL.Path)
 		return
 	}
-	metadata, perr := api.Donut.CreateObject(bucket, object, "", 0, fileBody, nil, nil)
+	metadata, perr := api.XL.CreateObject(bucket, object, "", 0, fileBody, nil, nil)
 	if perr != nil {
 		errorIf(perr.Trace(), "CreateObject failed.", nil)
 		switch perr.ToGoError().(type) {
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.ObjectExists:
+		case xl.ObjectExists:
 			writeErrorResponse(w, req, MutableWriteNotAllowed, req.URL.Path)
-		case donut.BadDigest:
+		case xl.BadDigest:
 			writeErrorResponse(w, req, BadDigest, req.URL.Path)
 		case signv4.DoesNotMatch:
 			writeErrorResponse(w, req, SignatureDoesNotMatch, req.URL.Path)
-		case donut.IncompleteBody:
+		case xl.IncompleteBody:
 			writeErrorResponse(w, req, IncompleteBody, req.URL.Path)
-		case donut.EntityTooLarge:
+		case xl.EntityTooLarge:
 			writeErrorResponse(w, req, EntityTooLarge, req.URL.Path)
-		case donut.InvalidDigest:
+		case xl.InvalidDigest:
 			writeErrorResponse(w, req, InvalidDigest, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -354,13 +354,13 @@ func (api API) PutBucketACLHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	bucket := vars["bucket"]
 
-	err := api.Donut.SetBucketMetadata(bucket, map[string]string{"acl": getACLTypeString(aclType)})
+	err := api.XL.SetBucketMetadata(bucket, map[string]string{"acl": getACLTypeString(aclType)})
 	if err != nil {
 		errorIf(err.Trace(), "PutBucketACL failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -389,13 +389,13 @@ func (api API) GetBucketACLHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	bucket := vars["bucket"]
 
-	bucketMetadata, err := api.Donut.GetBucketMetadata(bucket)
+	bucketMetadata, err := api.XL.GetBucketMetadata(bucket)
 	if err != nil {
 		errorIf(err.Trace(), "GetBucketMetadata failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)
@@ -430,13 +430,13 @@ func (api API) HeadBucketHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	bucket := vars["bucket"]
 
-	_, err := api.Donut.GetBucketMetadata(bucket)
+	_, err := api.XL.GetBucketMetadata(bucket)
 	if err != nil {
 		errorIf(err.Trace(), "GetBucketMetadata failed.", nil)
 		switch err.ToGoError().(type) {
-		case donut.BucketNotFound:
+		case xl.BucketNotFound:
 			writeErrorResponse(w, req, NoSuchBucket, req.URL.Path)
-		case donut.BucketNameInvalid:
+		case xl.BucketNameInvalid:
 			writeErrorResponse(w, req, InvalidBucketName, req.URL.Path)
 		default:
 			writeErrorResponse(w, req, InternalError, req.URL.Path)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"bufio"
@@ -28,19 +28,19 @@ import (
 	"github.com/minio/minio-xl/pkg/atomic"
 )
 
-// IsValidDonut - verify donut name is correct
-func IsValidDonut(donutName string) bool {
-	if len(donutName) < 3 || len(donutName) > 63 {
+// IsValidXL - verify xl name is correct
+func IsValidXL(xlName string) bool {
+	if len(xlName) < 3 || len(xlName) > 63 {
 		return false
 	}
-	if donutName[0] == '.' || donutName[len(donutName)-1] == '.' {
+	if xlName[0] == '.' || xlName[len(xlName)-1] == '.' {
 		return false
 	}
-	if match, _ := regexp.MatchString("\\.\\.", donutName); match == true {
+	if match, _ := regexp.MatchString("\\.\\.", xlName); match == true {
 		return false
 	}
-	// We don't support donutNames with '.' in them
-	match, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9\\-]+[a-zA-Z0-9]$", donutName)
+	// We don't support xlNames with '.' in them
+	match, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9\\-]+[a-zA-Z0-9]$", xlName)
 	return match
 }
 

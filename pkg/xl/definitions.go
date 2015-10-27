@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import "time"
 
-// ObjectMetadata container for object on donut system
+// ObjectMetadata container for object on xl system
 type ObjectMetadata struct {
 	// version
 	Version string `json:"version"`
@@ -43,7 +43,7 @@ type ObjectMetadata struct {
 	Metadata map[string]string `json:"metadata"`
 }
 
-// Metadata container for donut metadata
+// Metadata container for xl metadata
 type Metadata struct {
 	Version string `json:"version"`
 }

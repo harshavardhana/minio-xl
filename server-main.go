@@ -33,14 +33,14 @@ var serverCmd = cli.Command{
 	Usage:  "Start minio server.",
 	Action: serverMain,
 	CustomHelpTemplate: `NAME:
-  minio {{.Name}} - {{.Description}}
+  minio-xl {{.Name}} - {{.Description}}
 
 USAGE:
-  minio {{.Name}}
+  minio-xl {{.Name}}
 
 EXAMPLES:
   1. Start minio server
-      $ minio {{.Name}}
+      $ minio-xl {{.Name}}
 
 `,
 }

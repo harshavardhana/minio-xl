@@ -6,7 +6,7 @@ checkdeps:
 
 checkgopath:
 	@echo "Checking if project is at ${GOPATH}"
-	@for miniopath in $(echo ${GOPATH} | sed 's/:/\n/g'); do if [ ! -d ${miniopath}/src/github.com/minio/minio ]; then echo "Project not found in ${miniopath}, please follow instructions provided at https://github.com/minio/minio-xl/blob/master/CONTRIBUTING.md#setup-your-minio-github-repository" && exit 1; fi done
+	@for minioxlpath in $(echo ${GOPATH} | sed 's/:/\n/g'); do if [ ! -d ${minioxlpath}/src/github.com/minio/minio-xl ]; then echo "Project not found in ${minioxlpath}, please follow instructions provided at https://github.com/minio/minio-xl/blob/master/CONTRIBUTING.md#setup-your-minio-github-repository" && exit 1; fi done
 
 getdeps: checkdeps checkgopath
 	@go get -u github.com/golang/lint/golint && echo "Installed golint:"
@@ -39,7 +39,7 @@ cyclo:
 	@GO15VENDOREXPERIMENT=1 gocyclo -over 25 pkg
 
 build: constants getdeps verifiers
-	@echo "Installing minio:"
+	@echo "Installing minio-xl:"
 	@GO15VENDOREXPERIMENT=1 go generate ./...
 
 test: build
@@ -69,5 +69,5 @@ clean:
 	@echo "Cleaning up all the generated files:"
 	@rm -fv build-constants.go
 	@rm -fv cover.out
-	@rm -fv minio
+	@rm -fv minio-xl
 	@rm -fv pkg/erasure/*.syso

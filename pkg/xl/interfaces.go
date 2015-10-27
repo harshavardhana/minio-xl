@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package donut
+package xl
 
 import (
 	"io"
@@ -23,7 +23,7 @@ import (
 	signv4 "github.com/minio/minio-xl/pkg/signature"
 )
 
-// Collection of Donut specification interfaces
+// Collection of XL specification interfaces
 
 // Interface is a collection of cloud storage and management interface
 type Interface interface {
@@ -31,7 +31,7 @@ type Interface interface {
 	Management
 }
 
-// CloudStorage is a donut cloud storage interface
+// CloudStorage is a xl cloud storage interface
 type CloudStorage interface {
 	// Storage service operations
 	GetBucketMetadata(bucket string) (BucketMetadata, *probe.Error)
@@ -61,7 +61,7 @@ type Multipart interface {
 	ListObjectParts(string, string, ObjectResourcesMetadata) (ObjectResourcesMetadata, *probe.Error)
 }
 
-// Management is a donut management system interface
+// Management is a xl management system interface
 type Management interface {
 	Heal() *probe.Error
 	Rebalance() *probe.Error

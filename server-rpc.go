@@ -65,7 +65,7 @@ func (s *serverRPCService) NetStats(r *http.Request, arg *ServerArg, rep *NetSta
 
 func (s *serverRPCService) Version(r *http.Request, arg *ServerArg, rep *VersionRep) error {
 	rep.Version = "0.0.1"
-	rep.BuildDate = minioVersion
+	rep.BuildDate = minioXLVersion
 	rep.Architecture = runtime.GOARCH
 	rep.OperatingSystem = runtime.GOOS
 	return nil

@@ -20,11 +20,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/minio/minio-xl/pkg/donut"
+	"github.com/minio/minio-xl/pkg/xl"
 )
 
 // parse bucket url queries
-func getBucketResources(values url.Values) (v donut.BucketResourcesMetadata) {
+func getBucketResources(values url.Values) (v xl.BucketResourcesMetadata) {
 	v.Prefix = values.Get("prefix")
 	v.Marker = values.Get("marker")
 	v.Maxkeys, _ = strconv.Atoi(values.Get("max-keys"))
@@ -34,7 +34,7 @@ func getBucketResources(values url.Values) (v donut.BucketResourcesMetadata) {
 }
 
 // part bucket url queries for ?uploads
-func getBucketMultipartResources(values url.Values) (v donut.BucketMultipartResourcesMetadata) {
+func getBucketMultipartResources(values url.Values) (v xl.BucketMultipartResourcesMetadata) {
 	v.Prefix = values.Get("prefix")
 	v.KeyMarker = values.Get("key-marker")
 	v.MaxUploads, _ = strconv.Atoi(values.Get("max-uploads"))
@@ -45,7 +45,7 @@ func getBucketMultipartResources(values url.Values) (v donut.BucketMultipartReso
 }
 
 // parse object url queries
-func getObjectResources(values url.Values) (v donut.ObjectResourcesMetadata) {
+func getObjectResources(values url.Values) (v xl.ObjectResourcesMetadata) {
 	v.UploadID = values.Get("uploadId")
 	v.PartNumberMarker, _ = strconv.Atoi(values.Get("part-number-marker"))
 	v.MaxParts, _ = strconv.Atoi(values.Get("max-parts"))
