@@ -1,6 +1,10 @@
 ## Minio XL [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/minio/minio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Minio is a minimal cloud storage server written in Golang and licensed under [Apache license v2](./LICENSE). Minio is compatible with Amazon S3 APIs. [![Build Status](https://travis-ci.org/minio/minio-xl.svg?branch=master)](https://travis-ci.org/minio/minio-xl)
+Minio XL is a minimal cloud storage server for Petascale Storage. Written in Golang and licensed under [Apache license v2](./LICENSE). Compatible with Amazon S3 APIs. [![Build Status](https://travis-ci.org/minio/minio-xl.svg?branch=master)](https://travis-ci.org/minio/minio-xl)
+
+## Description
+
+This version of the Minio binary is built using ``XL`` distribute erasure code backend. ``XL`` erasure codes each data block with - 8 Data x 8 Parity.  ``XL`` is designed for immutable objects.
 
 ## Minio Client
 
@@ -15,30 +19,21 @@ Minio is a minimal cloud storage server written in Golang and licensed under [Ap
 ## Server Roadmap
 ~~~
 Storage Backend:
-- Donut: Erasure coded backend.
+- XL: Erasure coded backend.
  - Status: Standalone mode complete.
 Storage Operations:
-- Collective:
+- Controller:
   - Status: Work in progress.
 
 Storage Management:
-- WebCLI:
-  - Status: Work in progress.
-- Authentication:
-  - Status: Work in progress.
-- Admin Console:
-  - Status: Work in progress.
-- User Console:
-  - Status: Work in progress.
-- Logging:
+- Controller UI:
   - Status: Work in progress.
 ~~~
-
 
 ### Install 
 
 <blockquote>
-NOTE: If you happen to compile from source code, following options are not available anymore. Minio master branch is going through lots of rapid changes, documentation will be updated subsequently. 
+NOTE: If you compile from source, following options are not available anymore. Minio XL master branch is going through lots of rapid changes, documentation will be updated subsequently. 
 </blockquote>
 
 #### GNU/Linux
