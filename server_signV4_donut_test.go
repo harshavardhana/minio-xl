@@ -458,6 +458,15 @@ func (s *MyAPISignatureV4Suite) TestPutBucket(c *C) {
 	response, err := client.Do(request)
 	c.Assert(err, IsNil)
 	c.Assert(response.StatusCode, Equals, http.StatusOK)
+
+	request, err = s.newRequest("PUT", testSignatureV4Server.URL+"/put-bucket-slash/", 0, nil)
+	c.Assert(err, IsNil)
+	request.Header.Add("x-amz-acl", "private")
+
+	client = http.Client{}
+	response, err = client.Do(request)
+	c.Assert(err, IsNil)
+	c.Assert(response.StatusCode, Equals, http.StatusOK)
 }
 
 func (s *MyAPISignatureV4Suite) TestPutObject(c *C) {
