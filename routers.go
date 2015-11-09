@@ -27,28 +27,36 @@ import (
 
 // registerAPI - register all the object API handlers to their respective paths
 func registerAPI(mux *router.Router, a API) {
-	mux.HandleFunc("/", a.ListBucketsHandler).Methods("GET")
-	mux.HandleFunc("/{bucket}", a.GetBucketACLHandler).Queries("acl", "").Methods("GET")
-	mux.HandleFunc("/{bucket}", a.ListMultipartUploadsHandler).Queries("uploads", "").Methods("GET")
-	mux.HandleFunc("/{bucket}", a.ListObjectsHandler).Methods("GET")
-	mux.HandleFunc("/{bucket}", a.PutBucketACLHandler).Queries("acl", "").Methods("PUT")
-	mux.HandleFunc("/{bucket}", a.PutBucketHandler).Methods("PUT")
-	mux.HandleFunc("/{bucket}", a.HeadBucketHandler).Methods("HEAD")
-	mux.HandleFunc("/{bucket}", a.PostPolicyBucketHandler).Methods("POST")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.HeadObjectHandler).Methods("HEAD")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.PutObjectPartHandler).Queries("partNumber", "{partNumber:[0-9]+}", "uploadId", "{uploadId:.*}").Methods("PUT")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.ListObjectPartsHandler).Queries("uploadId", "{uploadId:.*}").Methods("GET")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.CompleteMultipartUploadHandler).Queries("uploadId", "{uploadId:.*}").Methods("POST")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.NewMultipartUploadHandler).Queries("uploads", "").Methods("POST")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.AbortMultipartUploadHandler).Queries("uploadId", "{uploadId:.*}").Methods("DELETE")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.GetObjectHandler).Methods("GET")
-	mux.HandleFunc("/{bucket}/{object:.*}", a.PutObjectHandler).Methods("PUT")
+	// root Router
+	root := mux.NewRoute().PathPrefix("/").Subrouter()
+	// Bucket router
+	bucket := root.PathPrefix("/{bucket}").Subrouter()
 
-	// not implemented yet
-	mux.HandleFunc("/{bucket}", a.DeleteBucketHandler).Methods("DELETE")
+	// Object operations
+	bucket.Methods("HEAD").Path("/{object:.+}").HandlerFunc(a.HeadObjectHandler)
+	bucket.Methods("PUT").Path("/{object:.+}").HandlerFunc(a.PutObjectPartHandler).Queries("partNumber", "{partNumber:[0-9]+}", "uploadId", "{uploadId:.*}")
+	bucket.Methods("GET").Path("/{object:.+}").HandlerFunc(a.ListObjectPartsHandler).Queries("uploadId", "{uploadId:.*}")
+	bucket.Methods("POST").Path("/{object:.+}").HandlerFunc(a.CompleteMultipartUploadHandler).Queries("uploadId", "{uploadId:.*}")
+	bucket.Methods("POST").Path("/{object:.+}").HandlerFunc(a.NewMultipartUploadHandler).Queries("uploads", "")
+	bucket.Methods("DELETE").Path("/{object:.+}").HandlerFunc(a.AbortMultipartUploadHandler).Queries("uploadId", "{uploadId:.*}")
+	bucket.Methods("GET").Path("/{object:.+}").HandlerFunc(a.GetObjectHandler)
+	bucket.Methods("PUT").Path("/{object:.+}").HandlerFunc(a.PutObjectHandler)
+	// Not supported
+	bucket.Methods("DELETE").Path("/{object:.+}").HandlerFunc(a.DeleteObjectHandler)
 
-	// unsupported API
-	mux.HandleFunc("/{bucket}/{object:.*}", a.DeleteObjectHandler).Methods("DELETE")
+	// Bucket operations
+	bucket.Methods("GET").HandlerFunc(a.GetBucketACLHandler).Queries("acl", "")
+	bucket.Methods("GET").HandlerFunc(a.ListMultipartUploadsHandler).Queries("uploads", "")
+	bucket.Methods("GET").HandlerFunc(a.ListObjectsHandler)
+	bucket.Methods("PUT").HandlerFunc(a.PutBucketACLHandler).Queries("acl", "")
+	bucket.Methods("PUT").HandlerFunc(a.PutBucketHandler)
+	bucket.Methods("HEAD").HandlerFunc(a.HeadBucketHandler)
+	bucket.Methods("POST").HandlerFunc(a.PostPolicyBucketHandler)
+	// Not supported
+	bucket.Methods("DELETE").HandlerFunc(a.DeleteBucketHandler)
+
+	// Root operation
+	root.Methods("GET").HandlerFunc(a.ListBucketsHandler)
 }
 
 // APIOperation container for individual operations read by Ticket Master

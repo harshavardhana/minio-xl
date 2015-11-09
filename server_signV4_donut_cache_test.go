@@ -439,6 +439,15 @@ func (s *MyAPIXLCacheSuite) TestPutBucket(c *C) {
 	response, err := client.Do(request)
 	c.Assert(err, IsNil)
 	c.Assert(response.StatusCode, Equals, http.StatusOK)
+
+	request, err = s.newRequest("PUT", testAPIXLCacheServer.URL+"/put-bucket-slash/", 0, nil)
+	c.Assert(err, IsNil)
+	request.Header.Add("x-amz-acl", "private")
+
+	client = http.Client{}
+	response, err = client.Do(request)
+	c.Assert(err, IsNil)
+	c.Assert(response.StatusCode, Equals, http.StatusOK)
 }
 
 func (s *MyAPIXLCacheSuite) TestPutObject(c *C) {
