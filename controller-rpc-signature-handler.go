@@ -135,7 +135,7 @@ func (r *rpcSignature) getCanonicalRequest() string {
 func (r rpcSignature) getScope(t time.Time) string {
 	scope := strings.Join([]string{
 		t.Format(yyyymmdd),
-		"milkyway",
+		"us-east-1",
 		"rpc",
 		"rpc_request",
 	}, "/")
@@ -154,7 +154,7 @@ func (r rpcSignature) getStringToSign(canonicalRequest string, t time.Time) stri
 func (r rpcSignature) getSigningKey(t time.Time) []byte {
 	secret := r.SecretAccessKey
 	date := sumHMAC([]byte("MINIO"+secret), []byte(t.Format(yyyymmdd)))
-	region := sumHMAC(date, []byte("milkyway"))
+	region := sumHMAC(date, []byte("us-east-1"))
 	service := sumHMAC(region, []byte("rpc"))
 	signingKey := sumHMAC(service, []byte("rpc_request"))
 	return signingKey

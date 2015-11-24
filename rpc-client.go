@@ -123,7 +123,7 @@ func newRPCRequest(config *AuthConfig, url string, op rpcOperation, transport ht
 
 	scope := strings.Join([]string{
 		t.Format(yyyymmdd),
-		"milkyway",
+		"us-east-1",
 		"rpc",
 		"rpc_request",
 	}, "/")
@@ -133,7 +133,7 @@ func newRPCRequest(config *AuthConfig, url string, op rpcOperation, transport ht
 	stringToSign = stringToSign + hex.EncodeToString(sum256([]byte(canonicalRequest)))
 
 	date := sumHMAC([]byte("MINIO"+config.Users["admin"].SecretAccessKey), []byte(t.Format(yyyymmdd)))
-	region := sumHMAC(date, []byte("milkyway"))
+	region := sumHMAC(date, []byte("us-east-1"))
 	service := sumHMAC(region, []byte("rpc"))
 	signingKey := sumHMAC(service, []byte("rpc_request"))
 
