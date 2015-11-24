@@ -29,7 +29,7 @@ const (
 
 // getRPCCredentialsFromAuth parse credentials tag from authorization value
 // Authorization:
-//     Authorization: MINIORPC Credential=admin/20130524/milkyway/rpc/rpc_request,
+//     Authorization: MINIORPC Credential=admin/20130524/us-east-1/rpc/rpc_request,
 //     SignedHeaders=host;x-minio-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024
 func getRPCCredentialsFromAuth(authValue string) ([]string, *probe.Error) {
 	if authValue == "" {
@@ -70,7 +70,7 @@ func isValidRPCRegion(authHeaderValue string) *probe.Error {
 		return err.Trace()
 	}
 	region := credentialElements[2]
-	if region != "milkyway" {
+	if region != "us-east-1" {
 		return probe.NewError(errInvalidRegion)
 	}
 	return nil
